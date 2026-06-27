@@ -2,6 +2,7 @@
 
 import {
   CheckCircle2,
+  Download,
   FileCheck2,
   Loader2,
   MessageSquareWarning,
@@ -9,7 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   DocumentStatusBadge,
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type {
   DocumentFile,
+  FileDownloadResponse,
   Observation,
   Review,
   ReviewDecision,
@@ -36,7 +38,11 @@ export function DocumentFilesPanel({
   documents,
 }: DocumentFilesPanelProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [downloadingDocumentId, setDownloadingDocumentId] = useState<
+    string | null
+  >(null);
   const [reviewingDocumentId, setReviewingDocumentId] = useState<string | null>(
     null,
   );
@@ -51,27 +57,54 @@ export function DocumentFilesPanel({
   >({});
   const [error, setError] = useState<string | null>(null);
 
-  async function registerReception() {
+  async function uploadFile(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
     setIsUploading(true);
     setError(null);
 
     try {
-      await apiFetch<DocumentFile>(`/document-requests/${requestId}/mock-upload`, {
+      const body = new FormData();
+      body.append("file", file);
+
+      await apiFetch<DocumentFile>(`/document-requests/${requestId}/upload`, {
         method: "POST",
-        body: {
-          fileName: `${requestTitle}.pdf`,
-          mimeType: "application/pdf",
-        },
+        body,
       });
       router.refresh();
     } catch (caught) {
       setError(
         caught instanceof ApiError
           ? caught.message
-          : "No pudimos registrar la recepcion.",
+          : "No pudimos subir el documento.",
       );
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }
+
+  async function downloadDocument(documentId: string) {
+    setDownloadingDocumentId(documentId);
+    setError(null);
+
+    try {
+      const data = await apiFetch<FileDownloadResponse>(
+        `/documents/${documentId}/download`,
+      );
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : "No pudimos preparar la descarga.",
+      );
+    } finally {
+      setDownloadingDocumentId(null);
     }
   }
 
@@ -160,19 +193,25 @@ export function DocumentFilesPanel({
           </p>
         </div>
 
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="sr-only"
+          onChange={(event) => uploadFile(event.target.files?.[0])}
+        />
         <Button
           type="button"
           variant="outline"
           className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
           disabled={isUploading}
-          onClick={registerReception}
+          onClick={() => fileInputRef.current?.click()}
         >
           {isUploading ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <UploadCloud className="size-4" />
           )}
-          Registrar recepcion
+          Subir documento
         </Button>
       </div>
 
@@ -182,6 +221,7 @@ export function DocumentFilesPanel({
             const currentVersion = document.versions[0];
             const isReviewing = reviewingDocumentId === document.id;
             const isObserving = observingDocumentId === document.id;
+            const isDownloading = downloadingDocumentId === document.id;
             const openObservations = document.observations.filter(
               (observation) => !observation.resolvedAt,
             );
@@ -205,6 +245,21 @@ export function DocumentFilesPanel({
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+                      disabled={isDownloading}
+                      onClick={() => downloadDocument(document.id)}
+                    >
+                      {isDownloading ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Download className="size-4" />
+                      )}
+                      Descargar
+                    </Button>
                     <Button
                       type="button"
                       size="sm"

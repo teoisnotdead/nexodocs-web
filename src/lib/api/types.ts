@@ -275,6 +275,14 @@ export type FileAsset = {
   updatedAt: string;
 };
 
+export type FileDownloadResponse = {
+  url: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  expiresInSeconds: number | null;
+};
+
 export type DocumentVersion = {
   id: string;
   organizationId: string;

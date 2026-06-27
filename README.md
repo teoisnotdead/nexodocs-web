@@ -23,13 +23,13 @@ Este repositorio contiene solo la aplicacion web. La API vive en el repositorio 
 - Gestion de procesos/workspaces.
 - Plantillas y checklists documentales.
 - Solicitudes documentales.
-- Flujo mock de documentos.
+- Carga real de documentos via API y Supabase Storage.
 - Revisiones, observaciones y entregas.
 - Vista de plan actual, limites y uso.
 
 ## Requisitos
 
-- Node.js 22 o superior.
+- Node.js 22 LTS.
 - pnpm 11.
 - API de NexoDocs corriendo localmente o desplegada.
 
@@ -91,7 +91,7 @@ Configuracion recomendada:
 - Install command: `pnpm install`
 - Build command: `pnpm build`
 - Output: automatico de Next.js
-- Node.js: 22 o superior
+- Node.js: 22 LTS
 
 Variables en Vercel:
 
@@ -118,6 +118,8 @@ Este frontend espera que la API exponga endpoints REST como:
 
 La sesion se maneja con cookies HTTP-only generadas por la API y reenviadas por el proxy interno `/api/backend`.
 
-## Estado del MVP
+## Archivos y descargas
 
-El almacenamiento de documentos todavia es mock: se guarda metadata en base de datos, pero no binarios en storage real. La integracion futura recomendada es Supabase Storage o S3 compatible.
+La web envia archivos reales con `FormData` hacia la API. La API guarda los binarios en Supabase Storage y devuelve URLs firmadas para descargar documentos y archivos de entregas.
+
+Para que funcione en produccion, la API debe tener configuradas las variables `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `SUPABASE_STORAGE_BUCKET`.

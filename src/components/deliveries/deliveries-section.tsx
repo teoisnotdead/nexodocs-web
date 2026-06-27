@@ -2,6 +2,7 @@
 
 import {
   CheckCircle2,
+  Download,
   FilePlus2,
   Loader2,
   MessageSquareWarning,
@@ -9,7 +10,7 @@ import {
   Send,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { DeliveryStatusBadge } from "@/components/deliveries/delivery-status";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import type {
   Delivery,
   DeliveryItem,
   DeliveryListResponse,
+  FileDownloadResponse,
 } from "@/lib/api/types";
 
 type DeliveriesSectionProps = {
@@ -30,11 +32,13 @@ type DeliveriesSectionProps = {
 
 export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps) {
   const router = useRouter();
+  const itemFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [addingItemId, setAddingItemId] = useState<string | null>(null);
+  const [downloadingItemId, setDownloadingItemId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [approvalDrafts, setApprovalDrafts] = useState<Record<string, string>>(
@@ -75,22 +79,26 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
     }
   }
 
-  async function addItem(delivery: Delivery) {
+  async function uploadItem(delivery: Delivery, file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
     setAddingItemId(delivery.id);
     setError(null);
 
-    const fileName =
-      itemDrafts[delivery.id]?.trim() ||
-      `${delivery.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
-
     try {
-      await apiFetch<DeliveryItem>(`/deliveries/${delivery.id}/items`, {
+      const body = new FormData();
+      body.append("file", file);
+
+      const itemTitle = itemDrafts[delivery.id]?.trim();
+      if (itemTitle) {
+        body.append("title", itemTitle);
+      }
+
+      await apiFetch<DeliveryItem>(`/deliveries/${delivery.id}/items/upload`, {
         method: "POST",
-        body: {
-          title: fileName,
-          fileName,
-          mimeType: "application/pdf",
-        },
+        body,
       });
       setItemDrafts((current) => ({ ...current, [delivery.id]: "" }));
       router.refresh();
@@ -102,6 +110,30 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
       );
     } finally {
       setAddingItemId(null);
+      const input = itemFileInputRefs.current[delivery.id];
+      if (input) {
+        input.value = "";
+      }
+    }
+  }
+
+  async function downloadItem(itemId: string) {
+    setDownloadingItemId(itemId);
+    setError(null);
+
+    try {
+      const data = await apiFetch<FileDownloadResponse>(
+        `/deliveries/items/${itemId}/download`,
+      );
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : "No pudimos preparar la descarga.",
+      );
+    } finally {
+      setDownloadingItemId(null);
     }
   }
 
@@ -226,7 +258,7 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
                   <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
                     <input
                       className="h-9 rounded-md border border-white/12 bg-white/[0.06] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
-                      placeholder="Nombre del archivo a entregar"
+                      placeholder="Titulo opcional del archivo"
                       value={itemDrafts[delivery.id] ?? ""}
                       onChange={(event) =>
                         setItemDrafts((current) => ({
@@ -235,20 +267,32 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
                         }))
                       }
                     />
+                    <input
+                      ref={(element) => {
+                        itemFileInputRefs.current[delivery.id] = element;
+                      }}
+                      type="file"
+                      className="sr-only"
+                      onChange={(event) =>
+                        uploadItem(delivery, event.target.files?.[0])
+                      }
+                    />
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
                       disabled={addingItemId === delivery.id}
-                      onClick={() => addItem(delivery)}
+                      onClick={() =>
+                        itemFileInputRefs.current[delivery.id]?.click()
+                      }
                     >
                       {addingItemId === delivery.id ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
                         <FilePlus2 className="size-4" />
                       )}
-                      Agregar archivo
+                      Subir archivo
                     </Button>
                   </div>
 
@@ -257,15 +301,32 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
                       {delivery.items.map((item) => (
                         <div
                           key={item.id}
-                          className="rounded-md bg-white/[0.04] px-3 py-2"
+                          className="grid gap-2 rounded-md bg-white/[0.04] px-3 py-2 sm:grid-cols-[1fr_auto] sm:items-center"
                         >
-                          <p className="truncate text-sm font-medium text-white">
-                            {item.fileAsset.fileName}
-                          </p>
-                          <p className="mt-1 text-xs text-white/45">
-                            {formatBytes(item.fileAsset.sizeBytes)} -{" "}
-                            {formatDate(item.createdAt)}
-                          </p>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-white">
+                              {item.fileAsset.fileName}
+                            </p>
+                            <p className="mt-1 text-xs text-white/45">
+                              {formatBytes(item.fileAsset.sizeBytes)} -{" "}
+                              {formatDate(item.createdAt)}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-8 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+                            disabled={downloadingItemId === item.id}
+                            onClick={() => downloadItem(item.id)}
+                          >
+                            {downloadingItemId === item.id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <Download className="size-4" />
+                            )}
+                            Descargar
+                          </Button>
                         </div>
                       ))}
                     </div>
