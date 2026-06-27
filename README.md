@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NexoDocs Web
 
-## Getting Started
+Frontend del MVP de NexoDocs, una plataforma para gestionar clientes, procesos y solicitudes documentales desde un dashboard operativo.
 
-First, run the development server:
+Este repositorio contiene solo la aplicacion web. La API vive en el repositorio `nexodocs-api`.
+
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Base UI
+- React Hook Form
+- Zod
+- pnpm
+
+## Funcionalidades principales
+
+- Registro e inicio de sesion.
+- Dashboard con resumen operativo.
+- Gestion de clientes y contactos.
+- Gestion de procesos/workspaces.
+- Plantillas y checklists documentales.
+- Solicitudes documentales.
+- Flujo mock de documentos.
+- Revisiones, observaciones y entregas.
+- Vista de plan actual, limites y uso.
+
+## Requisitos
+
+- Node.js 22 o superior.
+- pnpm 11.
+- API de NexoDocs corriendo localmente o desplegada.
+
+## Variables de entorno
+
+Copia el ejemplo:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3001
+API_INTERNAL_URL=http://127.0.0.1:3001
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Notas:
 
-## Learn More
+- `NEXT_PUBLIC_API_URL` queda expuesta al navegador.
+- `API_INTERNAL_URL` es server-only y se usa desde route handlers/server components.
+- El navegador llama a `/api/backend`; Next.js proxya esas peticiones hacia la API.
 
-To learn more about Next.js, take a look at the following resources:
+## Desarrollo local
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Instalar dependencias:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm install
+```
 
-## Deploy on Vercel
+Levantar la web:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Abrir:
+
+```text
+http://localhost:3000
+```
+
+## Scripts
+
+```bash
+pnpm dev      # servidor de desarrollo
+pnpm build    # build de produccion
+pnpm start    # servir build de produccion
+pnpm lint     # lint
+```
+
+## Deploy en Vercel
+
+Configuracion recomendada:
+
+- Framework: Next.js
+- Install command: `pnpm install`
+- Build command: `pnpm build`
+- Output: automatico de Next.js
+- Node.js: 22 o superior
+
+Variables en Vercel:
+
+```bash
+NEXT_PUBLIC_API_URL=https://your-nexodocs-api.onrender.com
+API_INTERNAL_URL=https://your-nexodocs-api.onrender.com
+```
+
+Despues de desplegar la API, agrega la URL final de Vercel en `WEB_ORIGIN` o `WEB_ORIGINS` dentro del backend.
+
+## Relacion con la API
+
+Este frontend espera que la API exponga endpoints REST como:
+
+- `/auth/register`
+- `/auth/login`
+- `/me`
+- `/clients`
+- `/workspaces`
+- `/document-requests`
+- `/documents`
+- `/deliveries`
+- `/plans/current`
+
+La sesion se maneja con cookies HTTP-only generadas por la API y reenviadas por el proxy interno `/api/backend`.
+
+## Estado del MVP
+
+El almacenamiento de documentos todavia es mock: se guarda metadata en base de datos, pero no binarios en storage real. La integracion futura recomendada es Supabase Storage o S3 compatible.
