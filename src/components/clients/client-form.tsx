@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Loader2, Plus, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -29,6 +29,10 @@ type ClientFormProps = {
 export function ClientForm({ mode, client }: ClientFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
+  const [showCommercialDetails, setShowCommercialDetails] = useState(
+    mode === "edit",
+  );
+  const [showPrimaryContact, setShowPrimaryContact] = useState(mode === "edit");
   const primary = client?.contacts.find((contact) => contact.isPrimary);
   const {
     register,
@@ -81,104 +85,136 @@ export function ClientForm({ mode, client }: ClientFormProps) {
       <div className="glass-card rounded-md p-5">
         <div className="mb-5">
           <h2 className="text-base font-semibold text-white">
-            Datos comerciales
+            {mode === "create" ? "Alta rapida" : "Datos comerciales"}
           </h2>
           <p className="mt-1 text-sm text-white/60">
-            Informacion principal para identificar y atender al cliente.
+            {mode === "create"
+              ? "Solo necesitas un nombre para crear el cliente. Luego puedes completar el perfil."
+              : "Informacion principal para identificar y atender al cliente."}
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Nombre cliente" error={errors.name?.message}>
             <input className={inputClassName} {...register("name")} />
           </Field>
-          <Field label="Razon social" error={errors.legalName?.message}>
-            <input className={inputClassName} {...register("legalName")} />
-          </Field>
-          <Field label="RUT / identificador" error={errors.taxId?.message}>
-            <input className={inputClassName} {...register("taxId")} />
-          </Field>
-          <Field label="Industria" error={errors.industry?.message}>
-            <input className={inputClassName} {...register("industry")} />
-          </Field>
-          <Field label="Correo general" error={errors.email?.message}>
-            <input
-              className={inputClassName}
-              type="email"
-              {...register("email")}
-            />
-          </Field>
-          <Field label="Telefono general" error={errors.phone?.message}>
-            <input className={inputClassName} {...register("phone")} />
-          </Field>
-          <Field label="Sitio web" error={errors.website?.message}>
-            <input
-              className={inputClassName}
-              placeholder="https://empresa.cl"
-              {...register("website")}
-            />
-          </Field>
-          <Field label="Estado" error={errors.status?.message}>
-            <select className={inputClassName} {...register("status")}>
-              <option value="ACTIVE">Activo</option>
-              <option value="PAUSED">Pausado</option>
-              <option value="ARCHIVED">Archivado</option>
-            </select>
-          </Field>
-          <Field
-            className="md:col-span-2"
-            label="Notas internas"
-            error={errors.notes?.message}
-          >
-            <textarea className={textareaClassName} {...register("notes")} />
-          </Field>
+          {mode === "create" ? (
+            <div className="flex items-end">
+              <ToggleSectionButton
+                isOpen={showCommercialDetails}
+                label="Datos opcionales"
+                onClick={() => setShowCommercialDetails((current) => !current)}
+              />
+            </div>
+          ) : null}
+          {showCommercialDetails ? (
+            <>
+              <Field label="Razon social" error={errors.legalName?.message}>
+                <input className={inputClassName} {...register("legalName")} />
+              </Field>
+              <Field label="RUT / identificador" error={errors.taxId?.message}>
+                <input className={inputClassName} {...register("taxId")} />
+              </Field>
+              <Field label="Industria" error={errors.industry?.message}>
+                <input className={inputClassName} {...register("industry")} />
+              </Field>
+              <Field label="Correo general" error={errors.email?.message}>
+                <input
+                  className={inputClassName}
+                  type="email"
+                  {...register("email")}
+                />
+              </Field>
+              <Field label="Telefono general" error={errors.phone?.message}>
+                <input className={inputClassName} {...register("phone")} />
+              </Field>
+              <Field label="Sitio web" error={errors.website?.message}>
+                <input
+                  className={inputClassName}
+                  placeholder="https://empresa.cl"
+                  {...register("website")}
+                />
+              </Field>
+              <Field label="Estado" error={errors.status?.message}>
+                <select className={inputClassName} {...register("status")}>
+                  <option value="ACTIVE">Activo</option>
+                  <option value="PAUSED">Pausado</option>
+                  <option value="ARCHIVED">Archivado</option>
+                </select>
+              </Field>
+              <Field
+                className="md:col-span-2"
+                label="Notas internas"
+                error={errors.notes?.message}
+              >
+                <textarea className={textareaClassName} {...register("notes")} />
+              </Field>
+            </>
+          ) : null}
         </div>
       </div>
 
       <div className="glass-card rounded-md p-5">
-        <div className="mb-5">
-          <h2 className="text-base font-semibold text-white">
-            Contacto principal
-          </h2>
-          <p className="mt-1 text-sm text-white/60">
-            Persona de referencia para solicitudes y seguimiento.
-          </p>
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-white">
+              Contacto principal
+            </h2>
+            <p className="mt-1 text-sm text-white/60">
+              {mode === "create"
+                ? "Puedes agregarlo ahora o dejarlo para cuando necesites enviar mensajes, correos o compartir el portal."
+                : "Persona de referencia para solicitudes y seguimiento."}
+            </p>
+          </div>
+          {mode === "create" ? (
+            <ToggleSectionButton
+              isOpen={showPrimaryContact}
+              label="Agregar contacto"
+              onClick={() => setShowPrimaryContact((current) => !current)}
+            />
+          ) : null}
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field
-            label="Nombre contacto"
-            error={errors.primaryContactName?.message}
-          >
-            <input
-              className={inputClassName}
-              {...register("primaryContactName")}
-            />
-          </Field>
-          <Field label="Cargo / rol" error={errors.primaryContactRole?.message}>
-            <input
-              className={inputClassName}
-              {...register("primaryContactRole")}
-            />
-          </Field>
-          <Field
-            label="Correo contacto"
-            error={errors.primaryContactEmail?.message}
-          >
-            <input
-              className={inputClassName}
-              type="email"
-              {...register("primaryContactEmail")}
-            />
-          </Field>
-          <Field
-            label="Telefono contacto"
-            error={errors.primaryContactPhone?.message}
-          >
-            <input
-              className={inputClassName}
-              {...register("primaryContactPhone")}
-            />
-          </Field>
-        </div>
+        {showPrimaryContact ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field
+              label="Nombre contacto"
+              error={errors.primaryContactName?.message}
+            >
+              <input
+                className={inputClassName}
+                {...register("primaryContactName")}
+              />
+            </Field>
+            <Field label="Cargo / rol" error={errors.primaryContactRole?.message}>
+              <input
+                className={inputClassName}
+                {...register("primaryContactRole")}
+              />
+            </Field>
+            <Field
+              label="Correo contacto"
+              error={errors.primaryContactEmail?.message}
+            >
+              <input
+                className={inputClassName}
+                type="email"
+                {...register("primaryContactEmail")}
+              />
+            </Field>
+            <Field
+              label="Telefono contacto"
+              error={errors.primaryContactPhone?.message}
+            >
+              <input
+                className={inputClassName}
+                {...register("primaryContactPhone")}
+              />
+            </Field>
+          </div>
+        ) : (
+          <div className="rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/55">
+            Sin contacto por ahora. Podras agregarlo desde el perfil del cliente.
+          </div>
+        )}
       </div>
 
       {formError ? (
@@ -207,6 +243,34 @@ export function ClientForm({ mode, client }: ClientFormProps) {
   );
 }
 
+function ToggleSectionButton({
+  isOpen,
+  label,
+  onClick,
+}: {
+  isOpen: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+      onClick={onClick}
+    >
+      {isOpen ? (
+        <ChevronDown className="size-4" />
+      ) : label === "Agregar contacto" ? (
+        <Plus className="size-4" />
+      ) : (
+        <ChevronRight className="size-4" />
+      )}
+      {label}
+    </Button>
+  );
+}
+
 function Field({
   label,
   error,
@@ -228,11 +292,7 @@ function Field({
 }
 
 function toClientPayload(values: ClientFormInput) {
-  const primaryContact =
-    values.primaryContactName ||
-    values.primaryContactEmail ||
-    values.primaryContactPhone ||
-    values.primaryContactRole
+  const primaryContact = values.primaryContactName
       ? {
           name: values.primaryContactName,
           email: values.primaryContactEmail,

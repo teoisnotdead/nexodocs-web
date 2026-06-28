@@ -26,8 +26,8 @@ export default async function NewClientPage() {
             Nuevo cliente
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
-            Registra la informacion comercial y el primer contacto para
-            comenzar a coordinar solicitudes.
+            Crea el cliente con lo minimo y completa los datos comerciales o
+            contactos cuando los necesites.
           </p>
         </div>
 

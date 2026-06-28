@@ -20,21 +20,36 @@ const optionalWebsite = z
   .transform((value) => (value ? value : undefined))
   .pipe(z.string().url("Ingresa una URL valida con https://").optional());
 
-export const clientFormSchema = z.object({
-  name: z.string().trim().min(2, "Ingresa el nombre del cliente."),
-  legalName: optionalText,
-  taxId: optionalText,
-  industry: optionalText,
-  email: optionalEmail,
-  phone: optionalText,
-  website: optionalWebsite,
-  notes: optionalText,
-  status: z.enum(["ACTIVE", "PAUSED", "ARCHIVED"]),
-  primaryContactName: optionalText,
-  primaryContactEmail: optionalEmail,
-  primaryContactPhone: optionalText,
-  primaryContactRole: optionalText,
-});
+export const clientFormSchema = z
+  .object({
+    name: z.string().trim().min(2, "Ingresa el nombre del cliente."),
+    legalName: optionalText,
+    taxId: optionalText,
+    industry: optionalText,
+    email: optionalEmail,
+    phone: optionalText,
+    website: optionalWebsite,
+    notes: optionalText,
+    status: z.enum(["ACTIVE", "PAUSED", "ARCHIVED"]),
+    primaryContactName: optionalText,
+    primaryContactEmail: optionalEmail,
+    primaryContactPhone: optionalText,
+    primaryContactRole: optionalText,
+  })
+  .superRefine((values, context) => {
+    const hasContactDetails =
+      values.primaryContactEmail ||
+      values.primaryContactPhone ||
+      values.primaryContactRole;
+
+    if (hasContactDetails && !values.primaryContactName) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ingresa el nombre del contacto o deja esta seccion vacia.",
+        path: ["primaryContactName"],
+      });
+    }
+  });
 
 export const contactFormSchema = z.object({
   name: z.string().trim().min(2, "Ingresa el nombre del contacto."),
