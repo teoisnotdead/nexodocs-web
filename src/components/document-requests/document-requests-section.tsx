@@ -1,9 +1,6 @@
 import { ApplyChecklistTemplateForm } from "@/components/checklist-templates/apply-checklist-template-form";
 import { DocumentFilesPanel } from "@/components/documents/document-files-panel";
 import { DocumentRequestForm } from "@/components/document-requests/document-request-form";
-import {
-  DocumentRequestStatusBadge,
-} from "@/components/document-requests/document-request-status";
 import { DocumentRequestStatusAction } from "@/components/document-requests/document-request-status-action";
 import { Separator } from "@/components/ui/separator";
 import type {
@@ -55,7 +52,6 @@ export function DocumentRequestsSection({
                   <h3 className="truncate text-sm font-semibold text-white">
                     {request.title}
                   </h3>
-                  <DocumentRequestStatusBadge status={request.status} />
                   {request.required ? (
                     <span className="rounded-md border border-cyan-200/20 bg-cyan-200/10 px-2 py-0.5 text-xs text-cyan-100">
                       Requerido
