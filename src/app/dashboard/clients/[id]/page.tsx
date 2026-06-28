@@ -14,7 +14,6 @@ import { getCurrentUser, serverApiFetch } from "@/lib/api/server";
 import type { Client, WorkspaceListResponse } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
   Building2,
   CalendarDays,
   Edit3,
@@ -69,13 +68,6 @@ export default async function ClientDetailPage({
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <Link
-              href="/dashboard/clients"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-white/60 hover:text-white"
-            >
-              <ArrowLeft className="size-4" />
-              Volver a clientes
-            </Link>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-normal text-balance md:text-3xl">
                 {client.name}

@@ -1,13 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   workspaceStatusOptions,
   workspaceTypeOptions,
@@ -164,21 +163,7 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
         </div>
       ) : null}
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-        <Link
-          href={
-            workspace
-              ? `/dashboard/workspaces/${workspace.id}`
-              : "/dashboard/workspaces"
-          }
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]",
-          )}
-        >
-          <ArrowLeft className="size-4" />
-          Volver
-        </Link>
+      <div className="flex justify-end">
         <Button type="submit" className="h-10 rounded-md" disabled={isSubmitting}>
           {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           Guardar proceso

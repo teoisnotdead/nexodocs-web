@@ -115,7 +115,7 @@ export function ClientPortalSharePanel({
       </div>
 
       {access ? (
-        <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_220px]">
+        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(300px,340px)]">
           <div className="min-w-0 rounded-md border border-white/10 bg-black/20 p-3">
             <p className="text-xs font-medium uppercase text-white/45">Link</p>
             <div className="mt-2 flex gap-2">
@@ -140,10 +140,10 @@ export function ClientPortalSharePanel({
             </div>
           </div>
 
-          <div className="rounded-md border border-white/10 bg-black/20 p-3">
+          <div className="min-w-0 rounded-md border border-white/10 bg-black/20 p-3">
             <p className="text-xs font-medium uppercase text-white/45">Codigo</p>
             <div className="mt-2 flex items-center gap-2">
-              <div className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 font-mono text-lg tracking-[0.22em] text-white">
+              <div className="inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.06] px-3 font-mono text-lg tracking-[0.18em] text-white">
                 <KeyRound className="size-4 tracking-normal text-cyan-100/70" />
                 {access.code}
               </div>

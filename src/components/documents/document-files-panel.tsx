@@ -5,6 +5,7 @@ import {
   Download,
   FileCheck2,
   Loader2,
+  MessageSquareText,
   MessageSquareWarning,
   UploadCloud,
   XCircle,
@@ -28,18 +29,17 @@ import type {
 
 type DocumentFilesPanelProps = {
   requestId: string;
-  requestTitle: string;
   documents: DocumentFile[];
 };
 
 export function DocumentFilesPanel({
   requestId,
-  requestTitle,
   documents,
 }: DocumentFilesPanelProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadNote, setUploadNote] = useState("");
   const [downloadingDocumentId, setDownloadingDocumentId] = useState<
     string | null
   >(null);
@@ -68,11 +68,16 @@ export function DocumentFilesPanel({
     try {
       const body = new FormData();
       body.append("file", file);
+      const note = uploadNote.trim();
+      if (note) {
+        body.append("notes", note);
+      }
 
       await apiFetch<DocumentFile>(`/document-requests/${requestId}/upload`, {
         method: "POST",
         body,
       });
+      setUploadNote("");
       router.refresh();
     } catch (caught) {
       setError(
@@ -181,7 +186,7 @@ export function DocumentFilesPanel({
 
   return (
     <div className="mt-4 border-t border-white/10 pt-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="grid gap-3 lg:grid-cols-[1fr_minmax(18rem,24rem)] lg:items-start">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase text-white/45">
             Documentos recibidos
@@ -189,30 +194,43 @@ export function DocumentFilesPanel({
           <p className="mt-1 text-sm text-white/60">
             {documents.length > 0
               ? `${documents.length} registro${documents.length === 1 ? "" : "s"} disponible${documents.length === 1 ? "" : "s"}`
-              : "Sin documentos registrados"}
+            : "Sin documentos registrados"}
           </p>
         </div>
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          className="sr-only"
-          onChange={(event) => uploadFile(event.target.files?.[0])}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          className="h-9 rounded-md border-white/12 bg-white/[0.045] text-white hover:bg-white/[0.1]"
-          disabled={isUploading}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {isUploading ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <UploadCloud className="size-4" />
-          )}
-          Subir documento
-        </Button>
+        <div className="grid gap-2">
+          <label className="grid gap-2">
+            <span className="text-xs font-medium uppercase text-white/45">
+              Comentario
+            </span>
+            <textarea
+              className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.045] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+              placeholder="Nota opcional para el cliente"
+              value={uploadNote}
+              onChange={(event) => setUploadNote(event.target.value)}
+            />
+          </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="sr-only"
+            onChange={(event) => uploadFile(event.target.files?.[0])}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 rounded-md border-white/12 bg-white/[0.045] text-white hover:bg-white/[0.1]"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {isUploading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <UploadCloud className="size-4" />
+            )}
+            Subir documento
+          </Button>
+        </div>
       </div>
 
       {documents.length > 0 ? (
@@ -267,6 +285,12 @@ export function DocumentFilesPanel({
                         : formatDate(document.createdAt)}
                     </p>
                     <p className="mt-1 text-xs text-white/45">{uploader}</p>
+                    {currentVersion?.notes ? (
+                      <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-white/65">
+                        <MessageSquareText className="mt-1 size-4 shrink-0 text-cyan-100/70" />
+                        {currentVersion.notes}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">

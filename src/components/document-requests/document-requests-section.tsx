@@ -93,7 +93,6 @@ export function DocumentRequestsSection({
             </div>
             <DocumentFilesPanel
               requestId={request.id}
-              requestTitle={request.title}
               documents={documentsByRequestId[request.id] ?? []}
             />
           </div>
