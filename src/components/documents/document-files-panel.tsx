@@ -50,6 +50,11 @@ export function DocumentFilesPanel({
   const [reviewingDocumentId, setReviewingDocumentId] = useState<string | null>(
     null,
   );
+  const [reviewingDecision, setReviewingDecision] =
+    useState<ReviewDecision | null>(null);
+  const [optimisticReviewDecisions, setOptimisticReviewDecisions] = useState<
+    Record<string, ReviewDecision>
+  >({});
   const [observingDocumentId, setObservingDocumentId] = useState<string | null>(
     null,
   );
@@ -122,6 +127,7 @@ export function DocumentFilesPanel({
 
   async function createReview(documentId: string, decision: ReviewDecision) {
     setReviewingDocumentId(documentId);
+    setReviewingDecision(decision);
     setError(null);
 
     try {
@@ -129,6 +135,10 @@ export function DocumentFilesPanel({
         method: "POST",
         body: { decision },
       });
+      setOptimisticReviewDecisions((current) => ({
+        ...current,
+        [documentId]: decision,
+      }));
       router.refresh();
     } catch (caught) {
       setError(
@@ -138,6 +148,7 @@ export function DocumentFilesPanel({
       );
     } finally {
       setReviewingDocumentId(null);
+      setReviewingDecision(null);
     }
   }
 
@@ -246,19 +257,26 @@ export function DocumentFilesPanel({
         <div className="mt-3 grid gap-2">
           {documents.map((document) => {
             const currentVersion = document.versions[0];
+            const optimisticReviewDecision =
+              optimisticReviewDecisions[document.id];
+            const effectiveStatus = optimisticReviewDecision ?? document.status;
             const isReviewing = reviewingDocumentId === document.id;
+            const isApproving =
+              isReviewing && reviewingDecision === "APPROVED";
+            const isRejecting =
+              isReviewing && reviewingDecision === "REJECTED";
             const isObserving = observingDocumentId === document.id;
             const isDownloading = downloadingDocumentId === document.id;
             const isClientUpload = Boolean(document.uploadedByClientContact);
             const canReview =
               isClientUpload &&
               ["UPLOADED", "UNDER_REVIEW", "OBSERVED"].includes(
-                document.status,
+                effectiveStatus,
               );
             const canObserve =
               isClientUpload &&
               !["APPROVED", "REJECTED", "REPLACED", "ARCHIVED"].includes(
-                document.status,
+                effectiveStatus,
               );
             const openObservations = document.observations.filter(
               (observation) => !observation.resolvedAt,
@@ -281,7 +299,7 @@ export function DocumentFilesPanel({
                         {currentVersion?.fileAsset.fileName ?? document.title}
                       </span>
                       {isClientUpload ? (
-                        <DocumentStatusBadge status={document.status} />
+                        <DocumentStatusBadge status={effectiveStatus} />
                       ) : (
                         <span className="rounded-md border border-emerald-200/20 bg-emerald-200/10 px-2 py-0.5 text-xs font-medium text-emerald-100">
                           Equipo
@@ -327,7 +345,7 @@ export function DocumentFilesPanel({
                           disabled={isReviewing}
                           onClick={() => createReview(document.id, "APPROVED")}
                         >
-                          {isReviewing ? (
+                          {isApproving ? (
                             <Loader2 className="size-4 animate-spin" />
                           ) : (
                             <CheckCircle2 className="size-4" />
@@ -342,7 +360,11 @@ export function DocumentFilesPanel({
                           disabled={isReviewing}
                           onClick={() => createReview(document.id, "REJECTED")}
                         >
-                          <XCircle className="size-4" />
+                          {isRejecting ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <XCircle className="size-4" />
+                          )}
                           Rechazar
                         </Button>
                       </>
@@ -411,17 +433,20 @@ export function DocumentFilesPanel({
                   </div>
                 ) : null}
 
-                {document.reviews.length > 0 ? (
+                {optimisticReviewDecision ? (
                   <p className="mt-3 text-xs text-white/45">
                     Ultima revision:{" "}
-                    {document.reviews[0].decision === "APPROVED"
-                      ? "Aprobado"
-                      : "Rechazado"}{" "}
+                    {formatReviewDecision(optimisticReviewDecision)}
+                  </p>
+                ) : document.reviews.length > 0 ? (
+                  <p className="mt-3 text-xs text-white/45">
+                    Ultima revision:{" "}
+                    {formatReviewDecision(document.reviews[0].decision)}{" "}
                     por {document.reviews[0].createdBy.name}
                   </p>
                 ) : (
                   <p className="mt-3 text-xs text-white/40">
-                    {formatDocumentStatus(document.status)}
+                    {formatDocumentStatus(effectiveStatus)}
                     {openObservations.length > 0
                       ? ` - ${openObservations.length} observacion${openObservations.length === 1 ? "" : "es"} abierta${openObservations.length === 1 ? "" : "s"}`
                       : ""}
@@ -501,6 +526,10 @@ function formatUploader(document: DocumentFile) {
   }
 
   return "Origen sin registrar";
+}
+
+function formatReviewDecision(decision: ReviewDecision) {
+  return decision === "APPROVED" ? "Aprobado" : "Rechazado";
 }
 
 function formatBytes(value: number) {

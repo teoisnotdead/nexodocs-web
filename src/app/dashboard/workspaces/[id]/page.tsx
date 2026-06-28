@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,11 @@ export default async function WorkspaceDetailPage({
       activePath="/dashboard/workspaces"
       breadcrumbs={[
         { label: "Inicio", href: "/dashboard" },
-        { label: "Procesos", href: "/dashboard/workspaces" },
+        { label: "Clientes", href: "/dashboard/clients" },
+        {
+          label: workspace.client.name,
+          href: `/dashboard/clients/${workspace.client.id}`,
+        },
         { label: workspace.name },
       ]}
     >
@@ -116,7 +121,14 @@ export default async function WorkspaceDetailPage({
               <Detail
                 icon={Building2}
                 label="Cliente"
-                value={workspace.client.name}
+                value={
+                  <Link
+                    href={`/dashboard/clients/${workspace.client.id}`}
+                    className="rounded-sm text-cyan-100 transition hover:text-cyan-50 hover:underline"
+                  >
+                    {workspace.client.name}
+                  </Link>
+                }
               />
               <Detail
                 icon={FolderKanban}
@@ -291,7 +303,7 @@ function Detail({
 }: {
   icon: typeof Building2;
   label: string;
-  value?: string | null;
+  value?: ReactNode;
 }) {
   return (
     <div className="min-w-0">
@@ -300,7 +312,7 @@ function Detail({
         <span>{label}</span>
       </div>
       <p className="mt-1 truncate text-sm font-medium text-white">
-        {value || "No definido"}
+        {value ?? "No definido"}
       </p>
     </div>
   );

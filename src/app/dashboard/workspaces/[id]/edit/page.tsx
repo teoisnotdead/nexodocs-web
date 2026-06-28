@@ -40,7 +40,11 @@ export default async function EditWorkspacePage({
       activePath="/dashboard/workspaces"
       breadcrumbs={[
         { label: "Inicio", href: "/dashboard" },
-        { label: "Procesos", href: "/dashboard/workspaces" },
+        { label: "Clientes", href: "/dashboard/clients" },
+        {
+          label: workspace.client.name,
+          href: `/dashboard/clients/${workspace.client.id}`,
+        },
         { label: workspace.name, href: `/dashboard/workspaces/${workspace.id}` },
         { label: "Editar" },
       ]}
