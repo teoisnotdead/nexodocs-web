@@ -14,7 +14,9 @@ import { useRef, useState } from "react";
 
 import { DeliveryStatusBadge } from "@/components/deliveries/delivery-status";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type {
   Approval,
@@ -199,8 +201,8 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
             <span className="text-xs font-medium uppercase text-white/45">
               Entrega
             </span>
-            <input
-              className="h-10 rounded-md border border-white/12 bg-white/[0.06] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+            <Input
+              className="!h-10 rounded-md border border-white/12 bg-white/[0.06] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
               placeholder="Informe final de cierre"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -210,8 +212,8 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
             <span className="text-xs font-medium uppercase text-white/45">
               Nota
             </span>
-            <input
-              className="h-10 rounded-md border border-white/12 bg-white/[0.06] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+            <Input
+              className="!h-10 rounded-md border border-white/12 bg-white/[0.06] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
               placeholder="Documentos preparados para revision"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
@@ -256,8 +258,8 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
 
                 <div className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-3">
                   <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <input
-                      className="h-9 rounded-md border border-white/12 bg-white/[0.06] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+                    <Input
+                      className="!h-9 rounded-md border border-white/12 bg-white/[0.06] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
                       placeholder="Titulo opcional del archivo"
                       value={itemDrafts[delivery.id] ?? ""}
                       onChange={(event) =>
@@ -376,7 +378,7 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
                   <span className="text-xs font-medium uppercase text-white/45">
                     Observacion
                   </span>
-                  <textarea
+                  <Textarea
                     className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.06] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
                     placeholder="Describe el ajuste solicitado"
                     value={approvalDrafts[delivery.id] ?? ""}

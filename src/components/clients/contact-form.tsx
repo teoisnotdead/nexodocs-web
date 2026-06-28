@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import {
   type ContactFormInput,
@@ -65,25 +66,25 @@ export function ContactForm({ clientId }: { clientId: string }) {
       <div className="grid gap-3 md:grid-cols-2">
         <label className="grid gap-2">
           <span className="text-sm font-medium text-white/70">Nombre</span>
-          <input className={inputClassName} {...register("name")} />
+          <Input className={inputClassName} {...register("name")} />
           {errors.name ? (
             <span className="text-xs text-rose-200">{errors.name.message}</span>
           ) : null}
         </label>
         <label className="grid gap-2">
           <span className="text-sm font-medium text-white/70">Rol</span>
-          <input className={inputClassName} {...register("role")} />
+          <Input className={inputClassName} {...register("role")} />
         </label>
         <label className="grid gap-2">
           <span className="text-sm font-medium text-white/70">Correo</span>
-          <input className={inputClassName} type="email" {...register("email")} />
+          <Input className={inputClassName} type="email" {...register("email")} />
           {errors.email ? (
             <span className="text-xs text-rose-200">{errors.email.message}</span>
           ) : null}
         </label>
         <label className="grid gap-2">
           <span className="text-sm font-medium text-white/70">Telefono</span>
-          <input className={inputClassName} {...register("phone")} />
+          <Input className={inputClassName} {...register("phone")} />
         </label>
       </div>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

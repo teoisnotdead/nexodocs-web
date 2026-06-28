@@ -2,6 +2,7 @@
 
 import { buttonVariants } from "@/components/ui/button";
 import { ClientStatusBadge } from "@/components/clients/client-status";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { Client, ClientListResponse } from "@/lib/api/types";
 import {
@@ -39,11 +40,11 @@ export function ClientList({ data }: ClientListProps) {
         </div>
         <label className="relative block md:w-80">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/45" />
-          <input
+          <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar cliente o contacto"
-            className="h-10 w-full rounded-md border border-white/12 bg-white/[0.07] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+            className="!h-10 w-full rounded-md border border-white/12 bg-white/[0.07] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
           />
         </label>
       </div>

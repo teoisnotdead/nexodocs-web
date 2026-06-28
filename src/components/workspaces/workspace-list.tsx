@@ -2,6 +2,14 @@
 
 import { WorkspaceStatusBadge, formatWorkspaceType, workspaceStatusOptions } from "@/components/workspaces/workspace-status";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Workspace, WorkspaceListResponse, WorkspaceStatus } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { CalendarDays, FolderKanban, Search, UserRound } from "lucide-react";
@@ -15,6 +23,10 @@ type WorkspaceListProps = {
 export function WorkspaceList({ data }: WorkspaceListProps) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<WorkspaceStatus | "ALL">("ALL");
+  const statusFilterOptions: Array<{
+    value: WorkspaceStatus | "ALL";
+    label: string;
+  }> = [{ value: "ALL", label: "Todos los estados" }, ...workspaceStatusOptions];
   const normalizedQuery = query.trim().toLowerCase();
   const workspaces = useMemo(
     () =>
@@ -42,25 +54,33 @@ export function WorkspaceList({ data }: WorkspaceListProps) {
         <div className="flex flex-col gap-3 md:flex-row xl:justify-end">
           <label className="relative block md:w-72">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/45" />
-            <input
+            <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar proceso o cliente"
-              className="h-10 w-full rounded-md border border-white/12 bg-white/[0.07] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+              className="!h-10 w-full rounded-md border border-white/12 bg-white/[0.07] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
             />
           </label>
-          <select
+          <Select
+            items={statusFilterOptions}
             value={status}
-            onChange={(event) => setStatus(event.target.value as WorkspaceStatus | "ALL")}
-            className="h-10 rounded-md border border-white/12 bg-white/[0.07] px-3 text-sm text-white outline-none focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20 md:w-56"
+            onValueChange={(nextStatus) => {
+              if (nextStatus) {
+                setStatus(nextStatus as WorkspaceStatus | "ALL");
+              }
+            }}
           >
-            <option value="ALL">Todos los estados</option>
-            {workspaceStatusOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-10 w-full rounded-md border-white/12 bg-white/[0.07] px-3 text-white hover:bg-white/[0.1] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20 md:w-56">
+              <SelectValue placeholder="Todos los estados" />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {statusFilterOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

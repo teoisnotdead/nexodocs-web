@@ -18,9 +18,11 @@ import {
   formatDocumentStatus,
 } from "@/components/documents/document-status";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type {
   DocumentFile,
+  DocumentRequestStatus,
   FileDownloadResponse,
   Observation,
   Review,
@@ -29,11 +31,13 @@ import type {
 
 type DocumentFilesPanelProps = {
   requestId: string;
+  requestStatus: DocumentRequestStatus;
   documents: DocumentFile[];
 };
 
 export function DocumentFilesPanel({
   requestId,
+  requestStatus,
   documents,
 }: DocumentFilesPanelProps) {
   const router = useRouter();
@@ -56,6 +60,9 @@ export function DocumentFilesPanel({
     Record<string, string>
   >({});
   const [error, setError] = useState<string | null>(null);
+  const canUploadToRequest = !["APPROVED", "CANCELLED"].includes(
+    requestStatus,
+  );
 
   async function uploadFile(file: File | undefined) {
     if (!file) {
@@ -198,39 +205,41 @@ export function DocumentFilesPanel({
           </p>
         </div>
 
-        <div className="grid gap-2">
-          <label className="grid gap-2">
-            <span className="text-xs font-medium uppercase text-white/45">
-              Comentario
-            </span>
-            <textarea
-              className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.045] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
-              placeholder="Nota opcional para el cliente"
-              value={uploadNote}
-              onChange={(event) => setUploadNote(event.target.value)}
+        {canUploadToRequest ? (
+          <div className="grid gap-2">
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase text-white/45">
+                Comentario
+              </span>
+              <Textarea
+                className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.045] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+                placeholder="Nota opcional para el cliente"
+                value={uploadNote}
+                onChange={(event) => setUploadNote(event.target.value)}
+              />
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="sr-only"
+              onChange={(event) => uploadFile(event.target.files?.[0])}
             />
-          </label>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="sr-only"
-            onChange={(event) => uploadFile(event.target.files?.[0])}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 rounded-md border-white/12 bg-white/[0.045] text-white hover:bg-white/[0.1]"
-            disabled={isUploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {isUploading ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <UploadCloud className="size-4" />
-            )}
-            Subir documento
-          </Button>
-        </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-md border-white/12 bg-white/[0.045] text-white hover:bg-white/[0.1]"
+              disabled={isUploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isUploading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <UploadCloud className="size-4" />
+              )}
+              Subir documento
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       {documents.length > 0 ? (
@@ -347,7 +356,7 @@ export function DocumentFilesPanel({
                       <span className="text-xs font-medium uppercase text-white/45">
                         Observacion
                       </span>
-                      <textarea
+                      <Textarea
                         className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.045] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
                         placeholder="Describe lo que debe corregirse o aclararse"
                         value={observationDrafts[document.id] ?? ""}

@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { useAuthRedirect } from "@/components/auth/auth-redirect";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { AuthResponse } from "@/lib/api/types";
 import { type LoginInput, loginSchema } from "@/lib/schemas/auth.schema";
@@ -51,7 +52,7 @@ export function LoginForm() {
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <label className="grid gap-2">
         <span className="text-sm font-medium text-white/70">Correo</span>
-        <input
+        <Input
           type="email"
           autoComplete="email"
           aria-invalid={Boolean(errors.email)}
@@ -64,7 +65,7 @@ export function LoginForm() {
       </label>
       <label className="grid gap-2">
         <span className="text-sm font-medium text-white/70">Contrasena</span>
-        <input
+        <Input
           type="password"
           autoComplete="current-password"
           aria-invalid={Boolean(errors.password)}

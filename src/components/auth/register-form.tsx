@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { useAuthRedirect } from "@/components/auth/auth-redirect";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { AuthResponse } from "@/lib/api/types";
 import {
@@ -58,7 +59,7 @@ export function RegisterForm() {
         <span className="text-sm font-medium text-white/70">
           Nombre completo
         </span>
-        <input
+        <Input
           autoComplete="name"
           aria-invalid={Boolean(errors.name)}
           className={inputClassName}
@@ -71,7 +72,7 @@ export function RegisterForm() {
       </label>
       <label className="grid gap-2">
         <span className="text-sm font-medium text-white/70">Organizacion</span>
-        <input
+        <Input
           aria-invalid={Boolean(errors.organizationName)}
           className={inputClassName}
           placeholder="TYT Tech Solutions"
@@ -85,7 +86,7 @@ export function RegisterForm() {
       </label>
       <label className="grid gap-2">
         <span className="text-sm font-medium text-white/70">Correo</span>
-        <input
+        <Input
           type="email"
           autoComplete="email"
           aria-invalid={Boolean(errors.email)}
@@ -99,7 +100,7 @@ export function RegisterForm() {
       </label>
       <label className="grid gap-2">
         <span className="text-sm font-medium text-white/70">Contrasena</span>
-        <input
+        <Input
           type="password"
           autoComplete="new-password"
           aria-invalid={Boolean(errors.password)}

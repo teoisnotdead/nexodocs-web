@@ -6,6 +6,13 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type {
   AppliedChecklist,
@@ -14,7 +21,7 @@ import type {
 } from "@/lib/api/types";
 
 const selectClassName =
-  "h-10 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 text-sm text-white outline-none transition focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
+  "h-10 w-full rounded-md border-white/12 bg-white/[0.07] px-3 text-white hover:bg-white/[0.1] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20";
 
 type ApplyChecklistTemplateFormProps = {
   workspaceId: string;
@@ -32,6 +39,20 @@ export function ApplyChecklistTemplateForm({
   const [assignedClientContactId, setAssignedClientContactId] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const templateItems =
+    templates.length === 0
+      ? [{ value: "", label: "Sin plantillas disponibles" }]
+      : templates.map((template) => ({
+          value: template.id,
+          label: template.name,
+        }));
+  const contactItems = [
+    { value: "", label: "Sin contacto asignado" },
+    ...contacts.map((contact) => ({
+      value: contact.id,
+      label: contact.name,
+    })),
+  ];
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,40 +97,48 @@ export function ApplyChecklistTemplateForm({
           <span className="text-sm font-medium text-white/70">
             Aplicar plantilla
           </span>
-          <select
-            className={selectClassName}
+          <Select
+            items={templateItems}
             value={templateId}
-            onChange={(event) => setTemplateId(event.target.value)}
+            onValueChange={(nextValue) => setTemplateId(nextValue ?? "")}
             disabled={templates.length === 0 || isSubmitting}
           >
-            {templates.length === 0 ? (
-              <option value="">Sin plantillas disponibles</option>
-            ) : null}
-            {templates.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className={selectClassName}>
+              <SelectValue placeholder="Sin plantillas disponibles" />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {templateItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
 
         <label className="grid gap-2">
           <span className="text-sm font-medium text-white/70">
             Contacto para solicitudes
           </span>
-          <select
-            className={selectClassName}
+          <Select
+            items={contactItems}
             value={assignedClientContactId}
-            onChange={(event) => setAssignedClientContactId(event.target.value)}
+            onValueChange={(nextValue) =>
+              setAssignedClientContactId(nextValue ?? "")
+            }
             disabled={isSubmitting}
           >
-            <option value="">Sin contacto asignado</option>
-            {contacts.map((contact) => (
-              <option key={contact.id} value={contact.id}>
-                {contact.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className={selectClassName}>
+              <SelectValue placeholder="Sin contacto asignado" />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {contactItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
 
         <Button
