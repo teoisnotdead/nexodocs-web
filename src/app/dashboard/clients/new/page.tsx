@@ -18,6 +18,11 @@ export default async function NewClientPage() {
       userName={user.name}
       userEmail={user.email}
       activePath="/dashboard/clients"
+      breadcrumbs={[
+        { label: "Inicio", href: "/dashboard" },
+        { label: "Clientes", href: "/dashboard/clients" },
+        { label: "Nuevo" },
+      ]}
     >
       <section className="mx-auto max-w-5xl space-y-6">
         <div>

@@ -23,7 +23,6 @@ import type {
 } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
   Building2,
   CalendarDays,
   Edit3,
@@ -83,13 +82,6 @@ export default async function WorkspaceDetailPage({
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <Link
-              href="/dashboard/workspaces"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-white/60 hover:text-white"
-            >
-              <ArrowLeft className="size-4" />
-              Volver a procesos
-            </Link>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-normal text-balance md:text-3xl">
                 {workspace.name}

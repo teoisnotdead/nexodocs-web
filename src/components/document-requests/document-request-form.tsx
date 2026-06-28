@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Plus } from "lucide-react";
+import { CalendarDays, Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,8 @@ export function DocumentRequestForm({
 }: DocumentRequestFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
+  const [dueDate, setDueDate] = useState("");
+  const dueDateInputRef = useRef<HTMLInputElement | null>(null);
   const {
     register,
     handleSubmit,
@@ -46,6 +48,20 @@ export function DocumentRequestForm({
       assignedClientContactId: "",
     },
   });
+  const dueDateRegistration = register("dueDate", {
+    onChange: (event) => setDueDate(event.target.value),
+  });
+
+  function openDueDatePicker() {
+    const input = dueDateInputRef.current;
+
+    if (input?.showPicker) {
+      input.showPicker();
+      return;
+    }
+
+    input?.focus();
+  }
 
   async function onSubmit(values: DocumentRequestFormInput) {
     setFormError(null);
@@ -71,6 +87,7 @@ export function DocumentRequestForm({
         dueDate: "",
         assignedClientContactId: "",
       });
+      setDueDate("");
       router.refresh();
     } catch (error) {
       setFormError(
@@ -107,9 +124,31 @@ export function DocumentRequestForm({
           </select>
         </Field>
         <Field label="Fecha limite" error={errors.dueDate?.message}>
-          <input className={inputClassName} type="date" {...register("dueDate")} />
+          <input
+            {...dueDateRegistration}
+            ref={(element) => {
+              dueDateRegistration.ref(element);
+              dueDateInputRef.current = element;
+            }}
+            className="sr-only"
+            tabIndex={-1}
+            type="date"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(
+              inputClassName,
+              "justify-start gap-2 border-white/12 bg-white/[0.07] text-left font-normal text-white hover:bg-white/[0.1]",
+              !dueDate && "text-white/80",
+            )}
+            onClick={openDueDatePicker}
+          >
+            <CalendarDays className="size-4 text-cyan-100" />
+            {dueDate ? formatDateInput(dueDate) : "dd-mm-yyyy"}
+          </Button>
         </Field>
-        <label className="flex min-h-11 items-center gap-3 rounded-md border border-white/12 bg-white/[0.05] px-3 text-sm text-white/75">
+        <label className="flex min-h-11 items-center gap-3 text-sm text-white/75 md:mt-7">
           <input
             className="size-4 accent-cyan-200"
             type="checkbox"
@@ -140,6 +179,12 @@ export function DocumentRequestForm({
       </div>
     </form>
   );
+}
+
+function formatDateInput(value: string) {
+  const [year, month, day] = value.split("-");
+
+  return year && month && day ? `${day}-${month}-${year}` : value;
 }
 
 function Field({

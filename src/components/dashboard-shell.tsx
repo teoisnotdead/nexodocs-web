@@ -7,14 +7,11 @@ import {
   Bell,
   BookTemplate,
   Building2,
+  ChevronLeft,
   ChevronRight,
-  ClipboardList,
-  FileText,
   FolderKanban,
   Home,
   Settings,
-  Truck,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -23,12 +20,7 @@ const navigation = [
   { label: "Inicio", href: "/dashboard", icon: Home },
   { label: "Clientes", href: "/dashboard/clients", icon: Building2 },
   { label: "Casos / Procesos", href: "/dashboard/workspaces", icon: FolderKanban },
-  { label: "Solicitudes", href: "#", icon: ClipboardList },
-  { label: "Documentos", href: "#", icon: FileText },
-  { label: "Entregas", href: "#", icon: Truck },
-  { label: "Recordatorios", href: "#", icon: Bell },
   { label: "Plantillas", href: "/dashboard/templates", icon: BookTemplate },
-  { label: "Usuarios", href: "#", icon: Users },
   { label: "Configuracion", href: "/dashboard/settings/plan", icon: Settings },
 ];
 
@@ -66,12 +58,14 @@ export function DashboardShell({
   const visibleBreadcrumbs =
     breadcrumbs ??
     (activeItem
-      ? [{ label: "Inicio", href: "/dashboard" }, { label: activeItem.label }]
+      ? activeItem.href === "/dashboard"
+        ? [{ label: "Inicio" }]
+        : [{ label: "Inicio", href: "/dashboard" }, { label: activeItem.label }]
       : [{ label: "Inicio" }]);
 
   return (
     <div className="dark-shell surface-grid min-h-screen text-white">
-      <aside className="glass-panel fixed inset-y-4 left-4 hidden w-72 rounded-md lg:flex lg:flex-col">
+      <aside className="glass-panel fixed inset-y-4 left-4 hidden w-60 rounded-md lg:flex lg:flex-col">
         <div className="flex h-16 items-center gap-3 px-5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-cyan-200 text-sm font-semibold text-slate-950">
             ND
@@ -111,11 +105,11 @@ export function DashboardShell({
         </nav>
       </aside>
 
-      <div className="lg:pl-80">
+      <div className="lg:pl-[17rem]">
         <header className="sticky top-0 z-20 p-3">
           <div className="glass-panel rounded-md">
-            <div className="flex min-h-16 flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6">
-              <div className="flex min-w-0 items-center gap-3">
+            <div className="flex min-h-16 items-center justify-between gap-3 px-3 py-3 md:px-5">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-cyan-200 text-sm font-semibold text-slate-950 lg:hidden">
                   ND
                 </div>
@@ -129,7 +123,7 @@ export function DashboardShell({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <Button
                   size="icon"
                   variant="outline"
@@ -138,7 +132,7 @@ export function DashboardShell({
                 >
                   <Bell className="size-4" />
                 </Button>
-                <div className="hidden min-w-0 text-right sm:block">
+                <div className="hidden min-w-0 text-right md:block">
                   <p className="truncate text-xs font-medium text-white">
                     {userName}
                   </p>
@@ -152,39 +146,43 @@ export function DashboardShell({
                 <LogoutButton />
               </div>
             </div>
-            <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-3 py-2 lg:hidden">
-              {navigation.map((item) => {
-                const active =
-                  item.href === "/dashboard"
-                    ? activePath === item.href
-                    : activePath.startsWith(item.href);
+            <div className="relative border-t border-white/10 lg:hidden">
+              <ChevronLeft className="pointer-events-none absolute left-2 top-1/2 z-10 size-4 -translate-y-1/2 text-white/35" />
+              <nav className="flex gap-1 overflow-x-auto px-8 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {navigation.map((item) => {
+                  const active =
+                    item.href === "/dashboard"
+                      ? activePath === item.href
+                      : activePath.startsWith(item.href);
 
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={cn(
-                      buttonVariants({
-                        size: "sm",
-                        variant: active ? "secondary" : "ghost",
-                      }),
-                      "h-9 shrink-0 gap-2 rounded-md px-3 text-white hover:bg-white/[0.08]",
-                      active && "bg-cyan-200/15 text-cyan-100",
-                    )}
-                  >
-                    <item.icon className="size-4 shrink-0" />
-                    <span className="whitespace-nowrap">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className={cn(
+                        buttonVariants({
+                          size: "sm",
+                          variant: active ? "secondary" : "ghost",
+                        }),
+                        "h-9 shrink-0 gap-2 rounded-md px-3 text-white hover:bg-white/[0.08]",
+                        active && "bg-cyan-200/15 text-cyan-100",
+                      )}
+                    >
+                      <item.icon className="size-4 shrink-0" />
+                      <span className="whitespace-nowrap">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+              <ChevronRight className="pointer-events-none absolute right-2 top-1/2 z-10 size-4 -translate-y-1/2 text-white/35" />
+            </div>
           </div>
         </header>
 
         <main className="mx-auto w-full max-w-7xl px-4 pb-6 pt-3 md:px-6 lg:py-8">
           <nav
             aria-label="Breadcrumb"
-            className="mb-4 flex min-w-0 items-center gap-1 overflow-x-auto text-xs text-white/45"
+            className="mb-6 flex min-w-0 items-center gap-2 overflow-x-auto text-base text-white/50 md:text-lg"
           >
             {visibleBreadcrumbs.map((item, index) => {
               const isLast = index === visibleBreadcrumbs.length - 1;
@@ -192,7 +190,7 @@ export function DashboardShell({
               return (
                 <span key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-1">
                   {index > 0 ? (
-                    <ChevronRight className="size-3.5 shrink-0 text-white/25" />
+                    <ChevronRight className="size-5 shrink-0 text-white/30" />
                   ) : null}
                   {item.href && !isLast ? (
                     <Link
@@ -202,7 +200,7 @@ export function DashboardShell({
                       {item.label}
                     </Link>
                   ) : (
-                    <span className="truncate font-medium text-cyan-100/80">
+                    <span className="truncate font-semibold text-cyan-100/85">
                       {item.label}
                     </span>
                   )}

@@ -8,7 +8,6 @@ import {
   Send,
   TimerReset,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import type { ActivityLog } from "@/lib/api/types";
 
@@ -32,14 +31,14 @@ export function ActivityTimeline({ items }: ActivityTimelineProps) {
   }
 
   return (
-    <div className="relative space-y-0">
+    <div className="relative ml-4 space-y-0 sm:ml-5">
       {items.map((item) => {
         const Icon = activityIcon(item.action);
 
         return (
           <div
             key={item.id}
-            className="relative border-l border-white/10 pb-5 pl-5 last:pb-0"
+            className="relative border-l border-white/10 pb-5 pl-6 last:pb-0"
           >
             <div className="absolute -left-[17px] top-0 flex size-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.06] backdrop-blur">
               <Icon className="size-4 text-white/65" />
@@ -73,7 +72,7 @@ function activityIcon(action: string) {
     return CheckCircle2;
   }
 
-  if (action.startsWith("DOCUMENT")) {
+  if (action.includes("DOCUMENT")) {
     return FileCheck2;
   }
 
@@ -93,6 +92,8 @@ function activityTitle(item: ActivityLog) {
     DOCUMENT_REQUEST_CREATED: "Solicitud creada",
     DOCUMENT_REQUEST_STATUS_CHANGED: "Solicitud actualizada",
     DOCUMENT_MOCK_UPLOADED: "Documento recibido",
+    DOCUMENT_UPLOADED: "Documento subido",
+    CLIENT_DOCUMENT_UPLOADED: "Documento recibido del cliente",
     DOCUMENT_APPROVED: "Documento aprobado",
     DOCUMENT_OBSERVED: "Documento observado",
     DOCUMENT_REJECTED: "Documento rechazado",
@@ -118,6 +119,8 @@ function activityDescription(item: ActivityLog) {
 
   const descriptions: Record<string, string> = {
     DOCUMENT_MOCK_UPLOADED: "Archivo registrado para revision.",
+    DOCUMENT_UPLOADED: "Archivo subido por el equipo.",
+    CLIENT_DOCUMENT_UPLOADED: "Archivo subido desde el portal cliente.",
     DOCUMENT_APPROVED: "Documento listo para continuar.",
     DOCUMENT_OBSERVED: "Hay puntos por corregir o aclarar.",
     DELIVERY_SENT: "Documentos compartidos con el cliente.",
@@ -134,13 +137,7 @@ function text(metadata: ActivityLog["metadata"], key: string) {
 }
 
 function LocalDateTime({ value }: { value: string }) {
-  const [formatted, setFormatted] = useState(() => formatDate(value));
-
-  useEffect(() => {
-    setFormatted(formatDate(value));
-  }, [value]);
-
-  return <span suppressHydrationWarning>{formatted}</span>;
+  return <span suppressHydrationWarning>{formatDate(value)}</span>;
 }
 
 function formatDate(value: string) {

@@ -8,6 +8,7 @@ import {
   KeyRound,
   Loader2,
   LockKeyhole,
+  MessageSquareText,
   UploadCloud,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -29,14 +30,21 @@ type ClientPortalPageClientProps = {
 
 const uploadableStatuses: DocumentRequestStatus[] = [
   "PENDING",
+  "SUBMITTED",
+  "IN_REVIEW",
   "OVERDUE",
   "OBSERVED",
+  "RESUBMITTED",
   "REJECTED",
 ];
 
 export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
   const [access, setAccess] = useState<ClientPortalAccessResponse | null>(null);
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : window.sessionStorage.getItem(sessionStorageKey(token)),
+  );
   const [code, setCode] = useState("");
   const [requests, setRequests] = useState<ClientPortalDocumentRequest[]>([]);
   const [summary, setSummary] =
@@ -46,6 +54,7 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
   const [uploadingRequestId, setUploadingRequestId] = useState<string | null>(
     null,
   );
+  const [uploadNotes, setUploadNotes] = useState<Record<string, string>>({});
   const [downloadingDocumentId, setDownloadingDocumentId] = useState<
     string | null
   >(null);
@@ -53,16 +62,13 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
-    const savedSession = window.sessionStorage.getItem(sessionStorageKey(token));
-
-    if (savedSession) {
-      setSessionToken(savedSession);
-      void loadRequests(savedSession);
+    if (sessionToken) {
+      void loadRequests(sessionToken);
     }
 
     void inspectAccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, sessionToken]);
 
   async function inspectAccess() {
     setIsInspecting(true);
@@ -162,6 +168,10 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
     try {
       const body = new FormData();
       body.append("file", file);
+      const notes = uploadNotes[request.id]?.trim();
+      if (notes) {
+        body.append("notes", notes);
+      }
 
       await portalFetch<DocumentFile>(
         token,
@@ -174,6 +184,7 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
           body,
         },
       );
+      setUploadNotes((current) => ({ ...current, [request.id]: "" }));
       await loadRequests(sessionToken);
     } catch (caught) {
       setError(
@@ -343,7 +354,25 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
                         </p>
                       </div>
 
-                      <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+                      <div className="grid gap-2 lg:min-w-80">
+                        {canUpload ? (
+                          <label className="grid gap-2">
+                            <span className="text-xs font-medium uppercase text-white/45">
+                              Comentario
+                            </span>
+                            <textarea
+                              className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.06] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+                              placeholder="Nota opcional para el contador"
+                              value={uploadNotes[request.id] ?? ""}
+                              onChange={(event) =>
+                                setUploadNotes((current) => ({
+                                  ...current,
+                                  [request.id]: event.target.value,
+                                }))
+                              }
+                            />
+                          </label>
+                        ) : null}
                         <input
                           ref={(node) => {
                             fileInputs.current[request.id] = node;
@@ -397,6 +426,33 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
                                     ? `${formatBytes(currentVersion.fileAsset.sizeBytes)} - ${formatDate(document.createdAt)}`
                                     : formatDate(document.createdAt)}
                                 </p>
+                                {currentVersion?.notes ? (
+                                  <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-white/65">
+                                    <MessageSquareText className="mt-1 size-4 shrink-0 text-cyan-100/70" />
+                                    {currentVersion.notes}
+                                  </p>
+                                ) : null}
+                                {document.observations.length > 0 ? (
+                                  <div className="mt-3 grid gap-2">
+                                    <p className="text-xs font-medium uppercase text-white/40">
+                                      Comentarios
+                                    </p>
+                                    {document.observations.map((observation) => (
+                                      <div
+                                        key={observation.id}
+                                        className="rounded-md border border-orange-200/15 bg-orange-200/[0.06] p-3"
+                                      >
+                                        <p className="text-sm leading-6 text-orange-50">
+                                          {observation.comment}
+                                        </p>
+                                        <p className="mt-1 text-xs text-white/45">
+                                          {observation.createdBy.name} -{" "}
+                                          {formatDate(observation.createdAt)}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : null}
                               </div>
                               <Button
                                 type="button"
