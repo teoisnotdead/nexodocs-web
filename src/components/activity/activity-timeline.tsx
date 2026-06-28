@@ -1,3 +1,5 @@
+"use client";
+
 import {
   CheckCircle2,
   FileCheck2,
@@ -6,6 +8,7 @@ import {
   Send,
   TimerReset,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import type { ActivityLog } from "@/lib/api/types";
 
@@ -29,19 +32,19 @@ export function ActivityTimeline({ items }: ActivityTimelineProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="relative space-y-0">
       {items.map((item) => {
         const Icon = activityIcon(item.action);
 
         return (
           <div
             key={item.id}
-            className="rounded-md border border-white/10 bg-white/[0.04] p-3"
+            className="relative border-l border-white/10 pb-5 pl-5 last:pb-0"
           >
+            <div className="absolute -left-[17px] top-0 flex size-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.06] backdrop-blur">
+              <Icon className="size-4 text-white/65" />
+            </div>
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/[0.06]">
-                <Icon className="size-4 text-white/65" />
-              </div>
               <div className="min-w-0">
                 <p className="font-medium text-white">
                   {activityTitle(item)}
@@ -50,7 +53,7 @@ export function ActivityTimeline({ items }: ActivityTimelineProps) {
                   {activityDescription(item)}
                 </p>
                 <p className="mt-2 text-xs text-white/45">
-                  {formatDate(item.createdAt)}
+                  <LocalDateTime value={item.createdAt} />
                 </p>
               </div>
             </div>
@@ -130,12 +133,28 @@ function text(metadata: ActivityLog["metadata"], key: string) {
   return typeof value === "string" ? value : null;
 }
 
+function LocalDateTime({ value }: { value: string }) {
+  const [formatted, setFormatted] = useState(() => formatDate(value));
+
+  useEffect(() => {
+    setFormatted(formatDate(value));
+  }, [value]);
+
+  return <span suppressHydrationWarning>{formatted}</span>;
+}
+
 function formatDate(value: string) {
+  const browserTimeZone =
+    typeof Intl !== "undefined"
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
+
   return new Intl.DateTimeFormat("es-CL", {
     day: "2-digit",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: browserTimeZone,
   }).format(new Date(value));
 }

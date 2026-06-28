@@ -180,7 +180,7 @@ export function DocumentFilesPanel({
   }
 
   return (
-    <div className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-3">
+    <div className="mt-4 border-t border-white/10 pt-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase text-white/45">
@@ -202,7 +202,7 @@ export function DocumentFilesPanel({
         <Button
           type="button"
           variant="outline"
-          className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+          className="h-9 rounded-md border-white/12 bg-white/[0.045] text-white hover:bg-white/[0.1]"
           disabled={isUploading}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -216,18 +216,32 @@ export function DocumentFilesPanel({
       </div>
 
       {documents.length > 0 ? (
-        <div className="mt-3 grid gap-3">
+        <div className="mt-3 grid gap-2">
           {documents.map((document) => {
             const currentVersion = document.versions[0];
             const isReviewing = reviewingDocumentId === document.id;
             const isObserving = observingDocumentId === document.id;
             const isDownloading = downloadingDocumentId === document.id;
+            const canReview = [
+              "UPLOADED",
+              "UNDER_REVIEW",
+              "OBSERVED",
+            ].includes(document.status);
+            const canObserve = ![
+              "APPROVED",
+              "REJECTED",
+              "REPLACED",
+              "ARCHIVED",
+            ].includes(document.status);
             const openObservations = document.observations.filter(
               (observation) => !observation.resolvedAt,
             );
 
             return (
-              <div key={document.id} className="rounded-md bg-white/[0.04] p-3">
+              <div
+                key={document.id}
+                className="rounded-md border border-white/[0.08] bg-white/[0.03] p-3"
+              >
                 <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -249,7 +263,7 @@ export function DocumentFilesPanel({
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+                      className="h-9 rounded-md border-white/12 bg-white/[0.045] text-white hover:bg-white/[0.1]"
                       disabled={isDownloading}
                       onClick={() => downloadDocument(document.id)}
                     >
@@ -260,69 +274,75 @@ export function DocumentFilesPanel({
                       )}
                       Descargar
                     </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-9 rounded-md"
-                      disabled={isReviewing}
-                      onClick={() => createReview(document.id, "APPROVED")}
-                    >
-                      {isReviewing ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <CheckCircle2 className="size-4" />
-                      )}
-                      Aprobar
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="h-9 rounded-md border-rose-200/20 bg-rose-200/10 text-rose-100 hover:bg-rose-200/15"
-                      disabled={isReviewing}
-                      onClick={() => createReview(document.id, "REJECTED")}
-                    >
-                      <XCircle className="size-4" />
-                      Rechazar
-                    </Button>
+                    {canReview ? (
+                      <>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-9 rounded-md"
+                          disabled={isReviewing}
+                          onClick={() => createReview(document.id, "APPROVED")}
+                        >
+                          {isReviewing ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="size-4" />
+                          )}
+                          Aprobar
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-9 rounded-md border-rose-200/20 bg-rose-200/10 text-rose-100 hover:bg-rose-200/15"
+                          disabled={isReviewing}
+                          onClick={() => createReview(document.id, "REJECTED")}
+                        >
+                          <XCircle className="size-4" />
+                          Rechazar
+                        </Button>
+                      </>
+                    ) : null}
                   </div>
                 </div>
 
-                <div className="mt-3 grid gap-2">
-                  <label className="grid gap-2">
-                    <span className="text-xs font-medium uppercase text-white/45">
-                      Observacion
-                    </span>
-                    <textarea
-                      className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.06] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
-                      placeholder="Describe lo que debe corregirse o aclararse"
-                      value={observationDrafts[document.id] ?? ""}
-                      onChange={(event) =>
-                        setObservationDrafts((current) => ({
-                          ...current,
-                          [document.id]: event.target.value,
-                        }))
-                      }
-                    />
-                  </label>
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="h-9 rounded-md border-orange-200/20 bg-orange-200/10 text-orange-100 hover:bg-orange-200/15"
-                      disabled={isObserving}
-                      onClick={() => createObservation(document.id)}
-                    >
-                      {isObserving ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <MessageSquareWarning className="size-4" />
-                      )}
-                      Guardar observacion
-                    </Button>
+                {canObserve ? (
+                  <div className="mt-3 grid gap-2">
+                    <label className="grid gap-2">
+                      <span className="text-xs font-medium uppercase text-white/45">
+                        Observacion
+                      </span>
+                      <textarea
+                        className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.045] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+                        placeholder="Describe lo que debe corregirse o aclararse"
+                        value={observationDrafts[document.id] ?? ""}
+                        onChange={(event) =>
+                          setObservationDrafts((current) => ({
+                            ...current,
+                            [document.id]: event.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-9 rounded-md border-orange-200/20 bg-orange-200/10 text-orange-100 hover:bg-orange-200/15"
+                        disabled={isObserving}
+                        onClick={() => createObservation(document.id)}
+                      >
+                        {isObserving ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <MessageSquareWarning className="size-4" />
+                        )}
+                        Guardar observacion
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
                 {document.observations.length > 0 ? (
                   <div className="mt-3 space-y-2">

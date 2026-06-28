@@ -4,10 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import {
-  documentRequestStatusOptions,
-  formatDocumentRequestStatus,
-} from "@/components/document-requests/document-request-status";
+import { documentRequestStatusOptions } from "@/components/document-requests/document-request-status";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { DocumentRequest, DocumentRequestStatus } from "@/lib/api/types";
 
@@ -55,7 +52,7 @@ export function DocumentRequestStatusAction({
           onChange={(event) =>
             updateStatus(event.target.value as DocumentRequestStatus)
           }
-          className="h-9 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 pr-8 text-sm text-white outline-none focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20 disabled:opacity-60 md:w-48"
+          className="h-9 w-full rounded-md border border-cyan-200/20 bg-cyan-200/[0.09] px-3 pr-8 text-sm font-medium text-cyan-50 outline-none focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20 disabled:opacity-60 md:w-44"
           aria-label={`Estado de ${request.title}`}
         >
           {documentRequestStatusOptions.map((option) => (
@@ -70,11 +67,7 @@ export function DocumentRequestStatusAction({
       </div>
       {error ? (
         <span className="text-xs text-rose-200">{error}</span>
-      ) : (
-        <span className="text-xs text-white/40">
-          {formatDocumentRequestStatus(value)}
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }

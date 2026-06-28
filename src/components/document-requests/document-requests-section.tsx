@@ -1,8 +1,8 @@
 import { ApplyChecklistTemplateForm } from "@/components/checklist-templates/apply-checklist-template-form";
 import { DocumentFilesPanel } from "@/components/documents/document-files-panel";
+import { DocumentRequestDeleteAction } from "@/components/document-requests/document-request-delete-action";
 import { DocumentRequestForm } from "@/components/document-requests/document-request-form";
 import { DocumentRequestStatusAction } from "@/components/document-requests/document-request-status-action";
-import { Separator } from "@/components/ui/separator";
 import type {
   ChecklistTemplate,
   ClientContact,
@@ -39,14 +39,18 @@ export function DocumentRequestsSection({
       <ApplyChecklistTemplateForm
         workspaceId={workspaceId}
         templates={templates}
+        contacts={contacts}
       />
 
       <DocumentRequestForm workspaceId={workspaceId} contacts={contacts} />
 
-      <div className="rounded-md border border-white/10 bg-white/[0.04]">
-        {data.items.map((request, index) => (
-          <div key={request.id}>
-            <div className="grid gap-4 p-4 lg:grid-cols-[1fr_auto]">
+      <div className="space-y-3">
+        {data.items.map((request) => (
+          <div
+            key={request.id}
+            className="rounded-md border border-white/10 bg-white/[0.035] p-4"
+          >
+            <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="truncate text-sm font-semibold text-white">
@@ -84,15 +88,18 @@ export function DocumentRequestsSection({
                   documents={documentsByRequestId[request.id] ?? []}
                 />
               </div>
-              <DocumentRequestStatusAction request={request} />
+              <div className="flex items-start gap-2 lg:justify-end">
+                <DocumentRequestStatusAction request={request} />
+                <DocumentRequestDeleteAction
+                  requestId={request.id}
+                  requestTitle={request.title}
+                />
+              </div>
             </div>
-            {index < data.items.length - 1 ? (
-              <Separator className="bg-white/10" />
-            ) : null}
           </div>
         ))}
         {data.items.length === 0 ? (
-          <div className="p-8 text-center">
+          <div className="rounded-md border border-white/10 bg-white/[0.035] p-8 text-center">
             <p className="text-sm font-medium text-white">
               Aun no hay solicitudes
             </p>

@@ -526,7 +526,7 @@ export type DeliveryListResponse = {
   };
 };
 
-export type ActivityActorType = "USER" | "SYSTEM";
+export type ActivityActorType = "USER" | "SYSTEM" | "CLIENT_CONTACT";
 
 export type ActivityLog = {
   id: string;
