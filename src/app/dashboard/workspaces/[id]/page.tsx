@@ -1,5 +1,6 @@
 import { ArchiveWorkspaceButton } from "@/components/workspaces/archive-workspace-button";
 import { ActivityTimeline } from "@/components/activity/activity-timeline";
+import { ClientPortalSharePanel } from "@/components/client-portal/client-portal-share-panel";
 import { DeliveriesSection } from "@/components/deliveries/deliveries-section";
 import { DocumentRequestsSection } from "@/components/document-requests/document-requests-section";
 import {
@@ -169,6 +170,11 @@ export default async function WorkspaceDetailPage({
             </CardContent>
           </Card>
         </div>
+
+        <ClientPortalSharePanel
+          workspaceId={workspace.id}
+          contacts={client?.contacts ?? []}
+        />
 
         <Card className="glass-card rounded-md">
           <CardHeader>

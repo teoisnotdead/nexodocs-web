@@ -46,7 +46,7 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
     headers,
     body: ["GET", "HEAD"].includes(request.method)
       ? undefined
-      : await request.text(),
+      : await request.arrayBuffer(),
     redirect: "manual",
   });
 

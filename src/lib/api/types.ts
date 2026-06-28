@@ -270,7 +270,8 @@ export type FileAsset = {
   sizeBytes: number;
   checksum: string | null;
   publicUrl: string | null;
-  createdById: string;
+  createdById: string | null;
+  uploadedByClientContactId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -290,7 +291,8 @@ export type DocumentVersion = {
   fileAssetId: string;
   versionNumber: number;
   notes: string | null;
-  createdById: string;
+  createdById: string | null;
+  uploadedByClientContactId: string | null;
   createdAt: string;
   updatedAt: string;
   fileAsset: FileAsset;
@@ -298,7 +300,13 @@ export type DocumentVersion = {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
+  uploadedByClientContact: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+  } | null;
 };
 
 export type ReviewDecision = "APPROVED" | "REJECTED";
@@ -350,7 +358,8 @@ export type DocumentFile = {
   title: string;
   status: DocumentStatus;
   origin: DocumentOrigin;
-  createdById: string;
+  createdById: string | null;
+  uploadedByClientContactId: string | null;
   createdAt: string;
   updatedAt: string;
   reviewedAt: string | null;
@@ -360,9 +369,74 @@ export type DocumentFile = {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
+  uploadedByClientContact: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+  } | null;
   reviews: Review[];
   observations: Observation[];
+};
+
+export type ClientPortalAccessResponse = {
+  id: string;
+  token?: string;
+  code?: string;
+  portalPath?: string;
+  portalSessionToken?: string;
+  requiresCode?: boolean;
+  expiresAt: string;
+  lastUsedAt: string | null;
+  sessionExpiresInSeconds: number;
+  organization: {
+    id: string;
+    name: string;
+  };
+  workspace: {
+    id: string;
+    name: string;
+    description: string | null;
+    dueDate: string | null;
+    status: WorkspaceStatus;
+  };
+  client: {
+    id: string;
+    name: string;
+  };
+  clientContact: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+  };
+};
+
+export type ClientPortalDocumentRequest = Pick<
+  DocumentRequest,
+  | "id"
+  | "organizationId"
+  | "workspaceId"
+  | "checklistId"
+  | "title"
+  | "description"
+  | "required"
+  | "dueDate"
+  | "status"
+  | "assignedClientContactId"
+  | "createdById"
+  | "createdAt"
+  | "updatedAt"
+> & {
+  assignedClientContact: DocumentRequest["assignedClientContact"];
+  documents: DocumentFile[];
+};
+
+export type ClientPortalDocumentRequestListResponse = {
+  access: ClientPortalAccessResponse;
+  items: ClientPortalDocumentRequest[];
+  summary: DocumentRequestListResponse["summary"];
 };
 
 export type DocumentListResponse = {
