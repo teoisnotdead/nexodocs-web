@@ -4,6 +4,14 @@ import { Check, Copy, KeyRound, Link2, Loader2, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { ClientContact, ClientPortalAccessResponse } from "@/lib/api/types";
 
@@ -20,6 +28,13 @@ export function ClientPortalSharePanel({
     () => contacts.find((contact) => contact.isPrimary)?.id ?? contacts[0]?.id ?? "",
     [contacts],
   );
+  const contactItems =
+    contacts.length === 0
+      ? [{ value: "", label: "Sin contactos" }]
+      : contacts.map((contact) => ({
+          value: contact.id,
+          label: `${contact.name}${contact.email ? ` - ${contact.email}` : ""}`,
+        }));
   const [selectedContactId, setSelectedContactId] = useState(defaultContactId);
   const [access, setAccess] = useState<ClientPortalAccessResponse | null>(null);
   const [portalUrl, setPortalUrl] = useState("");
@@ -78,23 +93,23 @@ export function ClientPortalSharePanel({
         </div>
 
         <div className="grid gap-2 sm:grid-cols-[minmax(180px,1fr)_auto] lg:min-w-[420px]">
-          <select
-            className="h-9 rounded-md border border-white/12 bg-white/[0.08] px-3 text-sm text-white outline-none transition focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
+          <Select
+            items={contactItems}
             value={selectedContactId}
             disabled={contacts.length === 0 || isGenerating}
-            onChange={(event) => setSelectedContactId(event.target.value)}
+            onValueChange={(nextValue) => setSelectedContactId(nextValue ?? "")}
           >
-            {contacts.length === 0 ? (
-              <option value="">Sin contactos</option>
-            ) : (
-              contacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.name}
-                  {contact.email ? ` - ${contact.email}` : ""}
-                </option>
-              ))
-            )}
-          </select>
+            <SelectTrigger className="h-9 w-full rounded-md border-white/12 bg-white/[0.08] px-3 text-white hover:bg-white/[0.12] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20">
+              <SelectValue placeholder="Sin contactos" />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {contactItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Button
             type="button"
@@ -119,10 +134,10 @@ export function ClientPortalSharePanel({
           <div className="min-w-0 rounded-md border border-white/10 bg-black/20 p-3">
             <p className="text-xs font-medium uppercase text-white/45">Link</p>
             <div className="mt-2 flex gap-2">
-              <input
+              <Input
                 readOnly
                 value={portalUrl}
-                className="h-9 min-w-0 flex-1 rounded-md border border-white/10 bg-white/[0.06] px-3 text-sm text-white/80 outline-none"
+                className="!h-9 min-w-0 flex-1 rounded-md border border-white/10 bg-white/[0.06] px-3 text-sm text-white/80 outline-none"
               />
               <Button
                 type="button"

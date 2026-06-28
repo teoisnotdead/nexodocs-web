@@ -4,9 +4,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   workspaceStatusOptions,
   workspaceTypeOptions,
@@ -21,6 +31,8 @@ import { cn } from "@/lib/utils";
 
 const inputClassName =
   "h-11 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
+const selectTriggerClassName =
+  "h-11 w-full rounded-md border-white/12 bg-white/[0.07] px-3 text-white hover:bg-white/[0.1] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20";
 const textareaClassName =
   "min-h-28 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
 
@@ -35,6 +47,7 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<WorkspaceFormInput>({
@@ -50,6 +63,10 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
       status: workspace?.status ?? "DRAFT",
     },
   });
+  const clientItems = clients.map((client) => ({
+    value: client.id,
+    label: client.name,
+  }));
 
   async function onSubmit(values: WorkspaceFormInput) {
     setFormError(null);
@@ -86,41 +103,101 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Cliente" error={errors.clientId?.message}>
-            <select className={inputClassName} {...register("clientId")}>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="clientId"
+              render={({ field }) => (
+                <Select
+                  items={clientItems}
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={(nextValue) => {
+                    if (nextValue) {
+                      field.onChange(nextValue);
+                    }
+                  }}
+                >
+                  <SelectTrigger className={selectTriggerClassName}>
+                    <SelectValue placeholder="Selecciona un cliente" />
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {clientItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
           <Field label="Estado" error={errors.status?.message}>
-            <select className={inputClassName} {...register("status")}>
-              {workspaceStatusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="status"
+              render={({ field }) => (
+                <Select
+                  items={workspaceStatusOptions}
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={(nextValue) => {
+                    if (nextValue) {
+                      field.onChange(nextValue);
+                    }
+                  }}
+                >
+                  <SelectTrigger className={selectTriggerClassName}>
+                    <SelectValue placeholder="Selecciona un estado" />
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {workspaceStatusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
           <Field label="Nombre del proceso" error={errors.name?.message}>
-            <input className={inputClassName} {...register("name")} />
+            <Input className={inputClassName} {...register("name")} />
           </Field>
           <Field label="Tipo de proceso" error={errors.workspaceType?.message}>
-            <select className={inputClassName} {...register("workspaceType")}>
-              {workspaceTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="workspaceType"
+              render={({ field }) => (
+                <Select
+                  items={workspaceTypeOptions}
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={(nextValue) => {
+                    if (nextValue) {
+                      field.onChange(nextValue);
+                    }
+                  }}
+                >
+                  <SelectTrigger className={selectTriggerClassName}>
+                    <SelectValue placeholder="Selecciona un tipo" />
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {workspaceTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
           <Field
             className="md:col-span-2"
             label="Descripcion"
             error={errors.description?.message}
           >
-            <textarea className={textareaClassName} {...register("description")} />
+            <Textarea className={textareaClassName} {...register("description")} />
           </Field>
         </div>
       </div>
@@ -136,7 +213,7 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="Anio" error={errors.periodYear?.message}>
-            <input
+            <Input
               className={inputClassName}
               inputMode="numeric"
               placeholder="2026"
@@ -144,7 +221,7 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
             />
           </Field>
           <Field label="Mes" error={errors.periodMonth?.message}>
-            <input
+            <Input
               className={inputClassName}
               inputMode="numeric"
               placeholder="4"
@@ -152,7 +229,17 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
             />
           </Field>
           <Field label="Fecha limite" error={errors.dueDate?.message}>
-            <input className={inputClassName} type="date" {...register("dueDate")} />
+            <Controller
+              control={control}
+              name="dueDate"
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={inputClassName}
+                />
+              )}
+            />
           </Field>
         </div>
       </div>

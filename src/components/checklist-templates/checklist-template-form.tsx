@@ -8,6 +8,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { ChecklistTemplate } from "@/lib/api/types";
 import {
@@ -77,7 +79,7 @@ export function ChecklistTemplateForm() {
 
       <div className="grid gap-4">
         <Field label="Nombre" error={errors.name?.message}>
-          <input
+          <Input
             className={inputClassName}
             placeholder="Cierre mensual"
             {...register("name")}
@@ -85,7 +87,7 @@ export function ChecklistTemplateForm() {
         </Field>
 
         <Field label="Descripcion" error={errors.description?.message}>
-          <textarea
+          <Textarea
             className={cn(textareaClassName, "min-h-24")}
             placeholder="Uso recomendado de esta lista"
             {...register("description")}
@@ -93,7 +95,7 @@ export function ChecklistTemplateForm() {
         </Field>
 
         <Field label="Documentos" error={errors.items?.message}>
-          <textarea
+          <Textarea
             className={textareaClassName}
             placeholder={"Facturas de compra\nFacturas de venta\nCartola bancaria"}
             {...register("items")}

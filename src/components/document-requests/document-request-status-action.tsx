@@ -4,7 +4,17 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { documentRequestStatusOptions } from "@/components/document-requests/document-request-status";
+import {
+  DocumentRequestStatusBadge,
+  documentRequestStatusOptions,
+} from "@/components/document-requests/document-request-status";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { DocumentRequest, DocumentRequestStatus } from "@/lib/api/types";
 
@@ -19,6 +29,15 @@ export function DocumentRequestStatusAction({
   const [value, setValue] = useState<DocumentRequestStatus>(request.status);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isTerminalStatus = ["APPROVED", "CANCELLED"].includes(request.status);
+
+  if (isTerminalStatus) {
+    return (
+      <div className="flex min-h-9 items-start">
+        <DocumentRequestStatusBadge status={request.status} />
+      </div>
+    );
+  }
 
   async function updateStatus(nextStatus: DocumentRequestStatus) {
     setValue(nextStatus);
@@ -46,21 +65,30 @@ export function DocumentRequestStatusAction({
   return (
     <div className="grid gap-1">
       <div className="relative">
-        <select
+        <Select
+          items={documentRequestStatusOptions}
           value={value}
           disabled={isSaving}
-          onChange={(event) =>
-            updateStatus(event.target.value as DocumentRequestStatus)
-          }
-          className="h-9 w-full rounded-md border border-cyan-200/20 bg-cyan-200/[0.09] px-3 pr-8 text-sm font-medium text-cyan-50 outline-none focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20 disabled:opacity-60 md:w-44"
-          aria-label={`Estado de ${request.title}`}
+          onValueChange={(nextStatus) => {
+            if (nextStatus) {
+              updateStatus(nextStatus as DocumentRequestStatus);
+            }
+          }}
         >
-          {documentRequestStatusOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            aria-label={`Estado de ${request.title}`}
+            className="h-9 w-fit min-w-36 rounded-md border-cyan-200/20 bg-cyan-200/[0.09] px-3 font-medium text-cyan-50 hover:bg-cyan-200/[0.13] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20 disabled:opacity-60"
+          >
+            <SelectValue className="flex-none" placeholder="Estado" />
+          </SelectTrigger>
+          <SelectContent align="start">
+            {documentRequestStatusOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {isSaving ? (
           <Loader2 className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-white/60" />
         ) : null}

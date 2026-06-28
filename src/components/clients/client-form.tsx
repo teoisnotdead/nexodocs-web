@@ -4,11 +4,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, ChevronRight, Loader2, Plus, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiFetch } from "@/lib/api/client";
-import type { Client } from "@/lib/api/types";
+import type { Client, ClientStatus } from "@/lib/api/types";
 import {
   type ClientFormInput,
   clientFormSchema,
@@ -17,8 +26,15 @@ import { cn } from "@/lib/utils";
 
 const inputClassName =
   "h-11 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
+const selectTriggerClassName =
+  "h-11 w-full rounded-md border-white/12 bg-white/[0.07] px-3 text-white hover:bg-white/[0.1] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20";
 const textareaClassName =
   "min-h-28 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
+const clientStatusOptions: Array<{ value: ClientStatus; label: string }> = [
+  { value: "ACTIVE", label: "Activo" },
+  { value: "PAUSED", label: "Pausado" },
+  { value: "ARCHIVED", label: "Archivado" },
+];
 
 type ClientFormProps = {
   mode: "create" | "edit";
@@ -35,6 +51,7 @@ export function ClientForm({ mode, client }: ClientFormProps) {
   const primary = client?.contacts.find((contact) => contact.isPrimary);
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ClientFormInput>({
@@ -94,7 +111,7 @@ export function ClientForm({ mode, client }: ClientFormProps) {
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Nombre cliente" error={errors.name?.message}>
-            <input className={inputClassName} {...register("name")} />
+            <Input className={inputClassName} {...register("name")} />
           </Field>
           {mode === "create" ? (
             <div className="flex items-end">
@@ -108,44 +125,66 @@ export function ClientForm({ mode, client }: ClientFormProps) {
           {showCommercialDetails ? (
             <>
               <Field label="Razon social" error={errors.legalName?.message}>
-                <input className={inputClassName} {...register("legalName")} />
+                <Input className={inputClassName} {...register("legalName")} />
               </Field>
               <Field label="RUT / identificador" error={errors.taxId?.message}>
-                <input className={inputClassName} {...register("taxId")} />
+                <Input className={inputClassName} {...register("taxId")} />
               </Field>
               <Field label="Industria" error={errors.industry?.message}>
-                <input className={inputClassName} {...register("industry")} />
+                <Input className={inputClassName} {...register("industry")} />
               </Field>
               <Field label="Correo general" error={errors.email?.message}>
-                <input
+                <Input
                   className={inputClassName}
                   type="email"
                   {...register("email")}
                 />
               </Field>
               <Field label="Telefono general" error={errors.phone?.message}>
-                <input className={inputClassName} {...register("phone")} />
+                <Input className={inputClassName} {...register("phone")} />
               </Field>
               <Field label="Sitio web" error={errors.website?.message}>
-                <input
+                <Input
                   className={inputClassName}
                   placeholder="https://empresa.cl"
                   {...register("website")}
                 />
               </Field>
               <Field label="Estado" error={errors.status?.message}>
-                <select className={inputClassName} {...register("status")}>
-                  <option value="ACTIVE">Activo</option>
-                  <option value="PAUSED">Pausado</option>
-                  <option value="ARCHIVED">Archivado</option>
-                </select>
+                <Controller
+                  control={control}
+                  name="status"
+                  render={({ field }) => (
+                    <Select
+                      items={clientStatusOptions}
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={(nextValue) => {
+                        if (nextValue) {
+                          field.onChange(nextValue);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className={selectTriggerClassName}>
+                        <SelectValue placeholder="Selecciona un estado" />
+                      </SelectTrigger>
+                      <SelectContent align="start">
+                        {clientStatusOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </Field>
               <Field
                 className="md:col-span-2"
                 label="Notas internas"
                 error={errors.notes?.message}
               >
-                <textarea className={textareaClassName} {...register("notes")} />
+                <Textarea className={textareaClassName} {...register("notes")} />
               </Field>
             </>
           ) : null}
@@ -178,13 +217,13 @@ export function ClientForm({ mode, client }: ClientFormProps) {
               label="Nombre contacto"
               error={errors.primaryContactName?.message}
             >
-              <input
+              <Input
                 className={inputClassName}
                 {...register("primaryContactName")}
               />
             </Field>
             <Field label="Cargo / rol" error={errors.primaryContactRole?.message}>
-              <input
+              <Input
                 className={inputClassName}
                 {...register("primaryContactRole")}
               />
@@ -193,7 +232,7 @@ export function ClientForm({ mode, client }: ClientFormProps) {
               label="Correo contacto"
               error={errors.primaryContactEmail?.message}
             >
-              <input
+              <Input
                 className={inputClassName}
                 type="email"
                 {...register("primaryContactEmail")}
@@ -203,7 +242,7 @@ export function ClientForm({ mode, client }: ClientFormProps) {
               label="Telefono contacto"
               error={errors.primaryContactPhone?.message}
             >
-              <input
+              <Input
                 className={inputClassName}
                 {...register("primaryContactPhone")}
               />

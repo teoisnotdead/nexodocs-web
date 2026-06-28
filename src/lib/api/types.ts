@@ -551,6 +551,10 @@ export type ActivityLog = {
 
 export type ActivityLogListResponse = {
   items: ActivityLog[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
 };
 
 export type ChecklistTemplateItem = {

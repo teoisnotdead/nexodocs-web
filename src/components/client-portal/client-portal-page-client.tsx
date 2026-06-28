@@ -14,6 +14,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ApiError, parseApiResponse } from "@/lib/api/client";
 import type {
   ClientPortalAccessResponse,
@@ -282,7 +284,7 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
                 <span className="text-xs font-medium uppercase text-white/45">
                   Codigo
                 </span>
-                <input
+                <Input
                   inputMode="numeric"
                   maxLength={6}
                   value={code}
@@ -360,7 +362,7 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
                             <span className="text-xs font-medium uppercase text-white/45">
                               Comentario
                             </span>
-                            <textarea
+                            <Textarea
                               className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.06] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
                               placeholder="Nota opcional para el contador"
                               value={uploadNotes[request.id] ?? ""}

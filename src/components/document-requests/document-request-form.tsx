@@ -1,12 +1,22 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarDays, Loader2, Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { ClientContact, DocumentRequest } from "@/lib/api/types";
 import {
@@ -17,6 +27,8 @@ import { cn } from "@/lib/utils";
 
 const inputClassName =
   "h-11 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
+const selectTriggerClassName =
+  "h-11 w-full rounded-md border-white/12 bg-white/[0.07] px-3 text-white hover:bg-white/[0.1] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20";
 const textareaClassName =
   "min-h-24 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
 
@@ -31,10 +43,9 @@ export function DocumentRequestForm({
 }: DocumentRequestFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState("");
-  const dueDateInputRef = useRef<HTMLInputElement | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -48,20 +59,13 @@ export function DocumentRequestForm({
       assignedClientContactId: "",
     },
   });
-  const dueDateRegistration = register("dueDate", {
-    onChange: (event) => setDueDate(event.target.value),
-  });
-
-  function openDueDatePicker() {
-    const input = dueDateInputRef.current;
-
-    if (input?.showPicker) {
-      input.showPicker();
-      return;
-    }
-
-    input?.focus();
-  }
+  const contactItems = [
+    { value: "", label: "Sin contacto asignado" },
+    ...contacts.map((contact) => ({
+      value: contact.id,
+      label: contact.name,
+    })),
+  ];
 
   async function onSubmit(values: DocumentRequestFormInput) {
     setFormError(null);
@@ -87,7 +91,6 @@ export function DocumentRequestForm({
         dueDate: "",
         assignedClientContactId: "",
       });
-      setDueDate("");
       router.refresh();
     } catch (error) {
       setFormError(
@@ -111,42 +114,45 @@ export function DocumentRequestForm({
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Titulo" error={errors.title?.message}>
-          <input className={inputClassName} {...register("title")} />
+          <Input className={inputClassName} {...register("title")} />
         </Field>
         <Field label="Contacto asignado" error={errors.assignedClientContactId?.message}>
-          <select className={inputClassName} {...register("assignedClientContactId")}>
-            <option value="">Sin contacto asignado</option>
-            {contacts.map((contact) => (
-              <option key={contact.id} value={contact.id}>
-                {contact.name}
-              </option>
-            ))}
-          </select>
+          <Controller
+            control={control}
+            name="assignedClientContactId"
+            render={({ field }) => (
+              <Select
+                items={contactItems}
+                name={field.name}
+                value={field.value ?? ""}
+                onValueChange={(nextValue) => field.onChange(nextValue ?? "")}
+              >
+                <SelectTrigger className={selectTriggerClassName}>
+                  <SelectValue placeholder="Sin contacto asignado" />
+                </SelectTrigger>
+                <SelectContent align="start">
+                  {contactItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </Field>
         <Field label="Fecha limite" error={errors.dueDate?.message}>
-          <input
-            {...dueDateRegistration}
-            ref={(element) => {
-              dueDateRegistration.ref(element);
-              dueDateInputRef.current = element;
-            }}
-            className="sr-only"
-            tabIndex={-1}
-            type="date"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            className={cn(
-              inputClassName,
-              "justify-start gap-2 border-white/12 bg-white/[0.07] text-left font-normal text-white hover:bg-white/[0.1]",
-              !dueDate && "text-white/80",
+          <Controller
+            control={control}
+            name="dueDate"
+            render={({ field }) => (
+              <DatePicker
+                value={field.value}
+                onChange={field.onChange}
+                className={inputClassName}
+              />
             )}
-            onClick={openDueDatePicker}
-          >
-            <CalendarDays className="size-4 text-cyan-100" />
-            {dueDate ? formatDateInput(dueDate) : "dd-mm-yyyy"}
-          </Button>
+          />
         </Field>
         <label className="flex min-h-11 items-center gap-3 text-sm text-white/75 md:mt-7">
           <input
@@ -161,7 +167,7 @@ export function DocumentRequestForm({
           label="Descripcion"
           error={errors.description?.message}
         >
-          <textarea className={textareaClassName} {...register("description")} />
+          <Textarea className={textareaClassName} {...register("description")} />
         </Field>
       </div>
 
@@ -181,12 +187,6 @@ export function DocumentRequestForm({
   );
 }
 
-function formatDateInput(value: string) {
-  const [year, month, day] = value.split("-");
-
-  return year && month && day ? `${day}-${month}-${year}` : value;
-}
-
 function Field({
   label,
   error,
@@ -199,7 +199,7 @@ function Field({
   className?: string;
 }) {
   return (
-    <label className={cn("grid gap-2", className)}>
+    <label className={cn("grid content-start gap-2", className)}>
       <span className="text-sm font-medium text-white/70">{label}</span>
       {children}
       {error ? <span className="text-xs text-rose-200">{error}</span> : null}

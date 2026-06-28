@@ -1,7 +1,6 @@
 import { ArchiveWorkspaceButton } from "@/components/workspaces/archive-workspace-button";
 import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { ClientPortalSharePanel } from "@/components/client-portal/client-portal-share-panel";
-import { DeliveriesSection } from "@/components/deliveries/deliveries-section";
 import { DocumentRequestsSection } from "@/components/document-requests/document-requests-section";
 import {
   WorkspaceStatusBadge,
@@ -15,7 +14,6 @@ import type {
   ChecklistTemplateListResponse,
   ActivityLogListResponse,
   Client,
-  DeliveryListResponse,
   DocumentFile,
   DocumentListResponse,
   DocumentRequestListResponse,
@@ -55,14 +53,13 @@ export default async function WorkspaceDetailPage({
     notFound();
   }
 
-  const [documentRequests, client, checklistTemplates, deliveries, activity] =
+  const [documentRequests, client, checklistTemplates, activity] =
     await Promise.all([
-    getDocumentRequests(workspace.id),
-    getClient(workspace.client.id),
-    getChecklistTemplates(),
-    getDeliveries(workspace.id),
-    getWorkspaceActivity(workspace.id),
-  ]);
+      getDocumentRequests(workspace.id),
+      getClient(workspace.client.id),
+      getChecklistTemplates(),
+      getWorkspaceActivity(workspace.id),
+    ]);
   const documentsByRequestId = await getDocumentsByRequestId(
     documentRequests.items,
   );
@@ -193,22 +190,14 @@ export default async function WorkspaceDetailPage({
         <Card className="glass-card rounded-md">
           <CardHeader>
             <CardTitle className="text-base tracking-normal text-white">
-              Entregas al cliente
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DeliveriesSection workspaceId={workspace.id} data={deliveries} />
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card rounded-md">
-          <CardHeader>
-            <CardTitle className="text-base tracking-normal text-white">
               Historial del proceso
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ActivityTimeline items={activity.items} />
+            <ActivityTimeline
+              workspaceId={workspace.id}
+              initialData={activity}
+            />
           </CardContent>
         </Card>
       </section>
@@ -263,36 +252,15 @@ async function getChecklistTemplates(): Promise<ChecklistTemplateListResponse> {
   }
 }
 
-async function getDeliveries(
-  workspaceId: string,
-): Promise<DeliveryListResponse> {
-  try {
-    return await serverApiFetch<DeliveryListResponse>(
-      `/workspaces/${workspaceId}/deliveries`,
-    );
-  } catch {
-    return {
-      items: [],
-      summary: {
-        draft: 0,
-        sent: 0,
-        approved: 0,
-        observed: 0,
-        completed: 0,
-      },
-    };
-  }
-}
-
 async function getWorkspaceActivity(
   workspaceId: string,
 ): Promise<ActivityLogListResponse> {
   try {
     return await serverApiFetch<ActivityLogListResponse>(
-      `/workspaces/${workspaceId}/activity`,
+      `/workspaces/${workspaceId}/activity?limit=10&offset=0`,
     );
   } catch {
-    return { items: [] };
+    return { items: [], total: 0, limit: 10, offset: 0, hasMore: false };
   }
 }
 
