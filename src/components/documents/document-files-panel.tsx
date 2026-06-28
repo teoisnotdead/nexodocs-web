@@ -222,20 +222,24 @@ export function DocumentFilesPanel({
             const isReviewing = reviewingDocumentId === document.id;
             const isObserving = observingDocumentId === document.id;
             const isDownloading = downloadingDocumentId === document.id;
-            const canReview = [
-              "UPLOADED",
-              "UNDER_REVIEW",
-              "OBSERVED",
-            ].includes(document.status);
-            const canObserve = ![
-              "APPROVED",
-              "REJECTED",
-              "REPLACED",
-              "ARCHIVED",
-            ].includes(document.status);
+            const isClientUpload = Boolean(document.uploadedByClientContact);
+            const canReview =
+              isClientUpload &&
+              ["UPLOADED", "UNDER_REVIEW", "OBSERVED"].includes(
+                document.status,
+              );
+            const canObserve =
+              isClientUpload &&
+              !["APPROVED", "REJECTED", "REPLACED", "ARCHIVED"].includes(
+                document.status,
+              );
             const openObservations = document.observations.filter(
               (observation) => !observation.resolvedAt,
             );
+            const visibleObservations = document.observations.slice(0, 3);
+            const hiddenObservations =
+              document.observations.length - visibleObservations.length;
+            const uploader = formatUploader(document);
 
             return (
               <div
@@ -249,13 +253,20 @@ export function DocumentFilesPanel({
                       <span className="truncate text-sm font-medium text-white">
                         {currentVersion?.fileAsset.fileName ?? document.title}
                       </span>
-                      <DocumentStatusBadge status={document.status} />
+                      {isClientUpload ? (
+                        <DocumentStatusBadge status={document.status} />
+                      ) : (
+                        <span className="rounded-md border border-emerald-200/20 bg-emerald-200/10 px-2 py-0.5 text-xs font-medium text-emerald-100">
+                          Equipo
+                        </span>
+                      )}
                     </div>
                     <p className="mt-2 text-xs text-white/45">
                       {currentVersion
                         ? `${formatBytes(currentVersion.fileAsset.sizeBytes)} - v${currentVersion.versionNumber} - ${formatDate(document.createdAt)}`
                         : formatDate(document.createdAt)}
                     </p>
+                    <p className="mt-1 text-xs text-white/45">{uploader}</p>
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
@@ -346,7 +357,10 @@ export function DocumentFilesPanel({
 
                 {document.observations.length > 0 ? (
                   <div className="mt-3 space-y-2">
-                    {document.observations.map((observation) => (
+                    <p className="text-xs font-medium uppercase text-white/45">
+                      Comentarios
+                    </p>
+                    {visibleObservations.map((observation) => (
                       <ObservationItem
                         key={observation.id}
                         observation={observation}
@@ -354,6 +368,13 @@ export function DocumentFilesPanel({
                         onResolve={resolveObservation}
                       />
                     ))}
+                    {hiddenObservations > 0 ? (
+                      <p className="text-xs text-white/40">
+                        {hiddenObservations} comentario
+                        {hiddenObservations === 1 ? "" : "s"} mas en el
+                        historial.
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
 
@@ -428,6 +449,25 @@ function ObservationItem({
       </div>
     </div>
   );
+}
+
+function formatUploader(document: DocumentFile) {
+  const currentVersion = document.versions[0];
+  const clientName =
+    document.uploadedByClientContact?.name ??
+    currentVersion?.uploadedByClientContact?.name;
+
+  if (clientName) {
+    return `Subido por cliente: ${clientName}`;
+  }
+
+  const userName = document.createdBy?.name ?? currentVersion?.createdBy?.name;
+
+  if (userName) {
+    return `Subido por equipo: ${userName}`;
+  }
+
+  return "Origen sin registrar";
 }
 
 function formatBytes(value: number) {

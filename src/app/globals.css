@@ -127,6 +127,20 @@
       linear-gradient(135deg, rgb(4 9 20 / 96%), rgb(9 20 34 / 95%)),
       #050916;
   }
+
+  input[type="date"] {
+    color-scheme: dark;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(1);
+    opacity: 0.78;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
   html {
     @apply font-sans;
   }

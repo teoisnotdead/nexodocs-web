@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, KeyRound, Link2, Loader2, RefreshCw } from "lucide-react";
+import { Check, Copy, KeyRound, Link2, Loader2, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -130,7 +130,11 @@ export function ClientPortalSharePanel({
                 className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
                 onClick={() => copy(portalUrl, "link")}
               >
-                <Copy className="size-4" />
+                {copied === "link" ? (
+                  <Check className="size-4" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
                 {copied === "link" ? "Copiado" : "Copiar"}
               </Button>
             </div>
@@ -145,15 +149,16 @@ export function ClientPortalSharePanel({
               </div>
               <Button
                 type="button"
-                size="icon-lg"
                 variant="outline"
-                className="rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+                className="h-9 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
                 onClick={() => access.code && copy(access.code, "code")}
               >
-                <Copy className="size-4" />
-                <span className="sr-only">
-                  {copied === "code" ? "Codigo copiado" : "Copiar codigo"}
-                </span>
+                {copied === "code" ? (
+                  <Check className="size-4" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
+                {copied === "code" ? "Copiado" : "Copiar"}
               </Button>
             </div>
           </div>

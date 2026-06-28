@@ -7,6 +7,7 @@ import {
   Bell,
   BookTemplate,
   Building2,
+  ChevronRight,
   ClipboardList,
   FileText,
   FolderKanban,
@@ -37,6 +38,10 @@ type DashboardShellProps = {
   userName: string;
   userEmail: string;
   activePath?: string;
+  breadcrumbs?: Array<{
+    label: string;
+    href?: string;
+  }>;
 };
 
 export function DashboardShell({
@@ -45,6 +50,7 @@ export function DashboardShell({
   userName,
   userEmail,
   activePath = "/dashboard",
+  breadcrumbs,
 }: DashboardShellProps) {
   const initials = userName
     .split(" ")
@@ -52,6 +58,16 @@ export function DashboardShell({
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  const activeItem = navigation.find((item) =>
+    item.href === "/dashboard"
+      ? activePath === item.href
+      : item.href !== "#" && activePath.startsWith(item.href),
+  );
+  const visibleBreadcrumbs =
+    breadcrumbs ??
+    (activeItem
+      ? [{ label: "Inicio", href: "/dashboard" }, { label: activeItem.label }]
+      : [{ label: "Inicio" }]);
 
   return (
     <div className="dark-shell surface-grid min-h-screen text-white">
@@ -166,6 +182,34 @@ export function DashboardShell({
         </header>
 
         <main className="mx-auto w-full max-w-7xl px-4 pb-6 pt-3 md:px-6 lg:py-8">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-4 flex min-w-0 items-center gap-1 overflow-x-auto text-xs text-white/45"
+          >
+            {visibleBreadcrumbs.map((item, index) => {
+              const isLast = index === visibleBreadcrumbs.length - 1;
+
+              return (
+                <span key={`${item.label}-${index}`} className="flex min-w-0 items-center gap-1">
+                  {index > 0 ? (
+                    <ChevronRight className="size-3.5 shrink-0 text-white/25" />
+                  ) : null}
+                  {item.href && !isLast ? (
+                    <Link
+                      href={item.href}
+                      className="shrink-0 rounded-sm text-white/55 transition hover:text-white"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className="truncate font-medium text-cyan-100/80">
+                      {item.label}
+                    </span>
+                  )}
+                </span>
+              );
+            })}
+          </nav>
           {children}
         </main>
       </div>

@@ -82,11 +82,6 @@ export function DocumentRequestsSection({
                     </span>
                   ) : null}
                 </div>
-                <DocumentFilesPanel
-                  requestId={request.id}
-                  requestTitle={request.title}
-                  documents={documentsByRequestId[request.id] ?? []}
-                />
               </div>
               <div className="flex items-start gap-2 lg:justify-end">
                 <DocumentRequestStatusAction request={request} />
@@ -96,6 +91,11 @@ export function DocumentRequestsSection({
                 />
               </div>
             </div>
+            <DocumentFilesPanel
+              requestId={request.id}
+              requestTitle={request.title}
+              documents={documentsByRequestId[request.id] ?? []}
+            />
           </div>
         ))}
         {data.items.length === 0 ? (

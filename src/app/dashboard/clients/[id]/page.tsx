@@ -60,6 +60,11 @@ export default async function ClientDetailPage({
       userName={user.name}
       userEmail={user.email}
       activePath="/dashboard/clients"
+      breadcrumbs={[
+        { label: "Inicio", href: "/dashboard" },
+        { label: "Clientes", href: "/dashboard/clients" },
+        { label: client.name },
+      ]}
     >
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

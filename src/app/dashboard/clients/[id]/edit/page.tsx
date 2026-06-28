@@ -30,6 +30,12 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
       userName={user.name}
       userEmail={user.email}
       activePath="/dashboard/clients"
+      breadcrumbs={[
+        { label: "Inicio", href: "/dashboard" },
+        { label: "Clientes", href: "/dashboard/clients" },
+        { label: client.name, href: `/dashboard/clients/${client.id}` },
+        { label: "Editar" },
+      ]}
     >
       <section className="mx-auto max-w-5xl space-y-6">
         <div>

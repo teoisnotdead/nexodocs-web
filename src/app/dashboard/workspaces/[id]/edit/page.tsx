@@ -38,6 +38,12 @@ export default async function EditWorkspacePage({
       userName={user.name}
       userEmail={user.email}
       activePath="/dashboard/workspaces"
+      breadcrumbs={[
+        { label: "Inicio", href: "/dashboard" },
+        { label: "Procesos", href: "/dashboard/workspaces" },
+        { label: workspace.name, href: `/dashboard/workspaces/${workspace.id}` },
+        { label: "Editar" },
+      ]}
     >
       <section className="mx-auto max-w-5xl space-y-6">
         <div>

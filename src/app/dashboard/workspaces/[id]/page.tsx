@@ -74,6 +74,11 @@ export default async function WorkspaceDetailPage({
       userName={user.name}
       userEmail={user.email}
       activePath="/dashboard/workspaces"
+      breadcrumbs={[
+        { label: "Inicio", href: "/dashboard" },
+        { label: "Procesos", href: "/dashboard/workspaces" },
+        { label: workspace.name },
+      ]}
     >
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
