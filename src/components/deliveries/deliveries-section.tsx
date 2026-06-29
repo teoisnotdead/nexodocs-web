@@ -26,6 +26,10 @@ import type {
   DeliveryListResponse,
   FileDownloadResponse,
 } from "@/lib/api/types";
+import {
+  MAX_UPLOAD_FILE_SIZE_LABEL,
+  validateUploadFileSize,
+} from "@/lib/files";
 
 type DeliveriesSectionProps = {
   workspaceId: string;
@@ -86,6 +90,16 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
       return;
     }
 
+    const fileSizeError = validateUploadFileSize(file);
+    if (fileSizeError) {
+      setError(fileSizeError);
+      const input = itemFileInputRefs.current[delivery.id];
+      if (input) {
+        input.value = "";
+      }
+      return;
+    }
+
     setAddingItemId(delivery.id);
     setError(null);
 
@@ -108,7 +122,7 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
       setError(
         caught instanceof ApiError
           ? caught.message
-          : "No pudimos agregar el archivo.",
+          : "No pudimos enviar el archivo.",
       );
     } finally {
       setAddingItemId(null);
@@ -294,8 +308,11 @@ export function DeliveriesSection({ workspaceId, data }: DeliveriesSectionProps)
                       ) : (
                         <FilePlus2 className="size-4" />
                       )}
-                      Subir archivo
+                      Enviar archivo
                     </Button>
+                    <p className="text-xs text-white/40 sm:col-span-2">
+                      Maximo {MAX_UPLOAD_FILE_SIZE_LABEL} por archivo.
+                    </p>
                   </div>
 
                   {delivery.items.length > 0 ? (

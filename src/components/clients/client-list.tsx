@@ -33,13 +33,14 @@ export function ClientList({ data }: ClientListProps) {
   return (
     <div className="space-y-4">
       <div className="glass-panel flex flex-col gap-3 rounded-md p-4 md:flex-row md:items-center md:justify-between">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Summary label="Activos" value={data.summary.active} />
           <Summary label="Pausados" value={data.summary.paused} />
-          <Summary label="Archivados" value={data.summary.archived} />
         </div>
         <label className="relative block md:w-80">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/45" />
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/45">
+            <Search className="size-4" />
+          </span>
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}

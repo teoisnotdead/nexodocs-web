@@ -18,6 +18,7 @@ type DatePickerProps = {
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  disableTodayAndPast?: boolean;
   className?: string;
 };
 
@@ -26,10 +27,12 @@ export function DatePicker({
   onChange,
   placeholder = "dd-mm-yyyy",
   disabled,
+  disableTodayAndPast = true,
   className,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const selectedDate = parseDateValue(value);
+  const minSelectableDate = getTomorrow();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -60,6 +63,11 @@ export function DatePicker({
           defaultMonth={selectedDate}
           captionLayout="dropdown"
           locale={es}
+          disabled={
+            disableTodayAndPast
+              ? { before: minSelectableDate }
+              : undefined
+          }
           onSelect={(nextDate) => {
             onChange(nextDate ? formatDateValue(nextDate) : "");
             setOpen(false);
@@ -68,6 +76,14 @@ export function DatePicker({
       </PopoverContent>
     </Popover>
   );
+}
+
+function getTomorrow() {
+  const tomorrow = new Date();
+  tomorrow.setHours(0, 0, 0, 0);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  return tomorrow;
 }
 
 function parseDateValue(value?: string) {

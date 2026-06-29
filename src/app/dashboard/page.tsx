@@ -10,10 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  WorkspaceStatusBadge,
-  formatWorkspaceType,
-} from "@/components/workspaces/workspace-status";
+import { formatWorkspaceType } from "@/components/workspaces/workspace-status";
 import { getCurrentUser, serverApiFetch } from "@/lib/api/server";
 import type { DashboardSummary, Organization } from "@/lib/api/types";
 import {
@@ -228,7 +225,6 @@ export default async function DashboardPage() {
                           <p className="min-w-0 truncate font-medium text-white">
                             {workspace.name}
                           </p>
-                          <WorkspaceStatusBadge status={workspace.status} />
                         </div>
                         <p className="mt-1 text-sm text-white/60">
                           {workspace.client.name} -{" "}

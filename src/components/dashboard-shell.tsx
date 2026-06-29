@@ -1,4 +1,5 @@
 import { LogoutButton } from "@/components/auth/logout-button";
+import { SessionRefresh } from "@/components/auth/session-refresh";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -65,6 +66,7 @@ export function DashboardShell({
 
   return (
     <div className="dark-shell surface-grid min-h-screen text-white">
+      <SessionRefresh />
       <aside className="glass-panel fixed inset-y-4 left-4 hidden w-60 rounded-md lg:flex lg:flex-col">
         <div className="flex h-16 items-center gap-3 px-5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-cyan-200 text-sm font-semibold text-slate-950">

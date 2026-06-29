@@ -13,13 +13,6 @@ const optionalEmail = z
   .transform((value) => (value ? value : undefined))
   .pipe(z.string().email("Ingresa un correo valido.").optional());
 
-const optionalWebsite = z
-  .string()
-  .trim()
-  .optional()
-  .transform((value) => (value ? value : undefined))
-  .pipe(z.string().url("Ingresa una URL valida con https://").optional());
-
 export const clientFormSchema = z
   .object({
     name: z.string().trim().min(2, "Ingresa el nombre del cliente."),
@@ -28,7 +21,7 @@ export const clientFormSchema = z
     industry: optionalText,
     email: optionalEmail,
     phone: optionalText,
-    website: optionalWebsite,
+    website: optionalText,
     notes: optionalText,
     status: z.enum(["ACTIVE", "PAUSED", "ARCHIVED"]),
     primaryContactName: optionalText,

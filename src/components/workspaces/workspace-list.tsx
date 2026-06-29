@@ -1,16 +1,9 @@
 "use client";
 
-import { WorkspaceStatusBadge, formatWorkspaceType, workspaceStatusOptions } from "@/components/workspaces/workspace-status";
+import { formatWorkspaceType } from "@/components/workspaces/workspace-status";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { Workspace, WorkspaceListResponse, WorkspaceStatus } from "@/lib/api/types";
+import type { Workspace, WorkspaceListResponse } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { CalendarDays, FolderKanban, Search, UserRound } from "lucide-react";
 import Link from "next/link";
@@ -22,38 +15,55 @@ type WorkspaceListProps = {
 
 export function WorkspaceList({ data }: WorkspaceListProps) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<WorkspaceStatus | "ALL">("ALL");
-  const statusFilterOptions: Array<{
-    value: WorkspaceStatus | "ALL";
-    label: string;
-  }> = [{ value: "ALL", label: "Todos los estados" }, ...workspaceStatusOptions];
   const normalizedQuery = query.trim().toLowerCase();
   const workspaces = useMemo(
     () =>
       data.items.filter((workspace) => {
-        const matchesStatus = status === "ALL" || workspace.status === status;
         const matchesQuery = normalizedQuery
           ? matchesWorkspace(workspace, normalizedQuery)
           : true;
 
-        return matchesStatus && matchesQuery;
+        return matchesQuery;
       }),
-    [data.items, normalizedQuery, status],
+    [data.items, normalizedQuery],
+  );
+  const requestSummary = useMemo(
+    () =>
+      workspaces.reduce(
+        (summary, workspace) => {
+          const itemSummary = workspace.documentRequestSummary ?? {
+            pending: 0,
+            submitted: 0,
+            approved: 0,
+            rejected: 0,
+          };
+
+          return {
+            pending: summary.pending + itemSummary.pending,
+            submitted: summary.submitted + itemSummary.submitted,
+            approved: summary.approved + itemSummary.approved,
+            rejected: summary.rejected + itemSummary.rejected,
+          };
+        },
+        { pending: 0, submitted: 0, approved: 0, rejected: 0 },
+      ),
+    [workspaces],
   );
 
   return (
     <div className="space-y-4">
       <div className="glass-panel grid gap-4 rounded-md p-4 xl:grid-cols-[1fr_auto]">
-        <div className="grid gap-3 sm:grid-cols-5">
-          <Summary label="Borrador" value={data.summary.draft} />
-          <Summary label="Activos" value={data.summary.active} />
-          <Summary label="Esperando" value={data.summary.waitingClient} />
-          <Summary label="Revision" value={data.summary.inReview} />
-          <Summary label="Completados" value={data.summary.completed} />
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Summary label="Pendientes" value={requestSummary.pending} />
+          <Summary label="Recibidas" value={requestSummary.submitted} />
+          <Summary label="Aprobadas" value={requestSummary.approved} />
+          <Summary label="Rechazadas" value={requestSummary.rejected} />
         </div>
         <div className="flex flex-col gap-3 md:flex-row xl:justify-end">
           <label className="relative block md:w-72">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-white/45" />
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-white/45">
+              <Search className="size-4" />
+            </span>
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -61,26 +71,6 @@ export function WorkspaceList({ data }: WorkspaceListProps) {
               className="!h-10 w-full rounded-md border border-white/12 bg-white/[0.07] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
             />
           </label>
-          <Select
-            items={statusFilterOptions}
-            value={status}
-            onValueChange={(nextStatus) => {
-              if (nextStatus) {
-                setStatus(nextStatus as WorkspaceStatus | "ALL");
-              }
-            }}
-          >
-            <SelectTrigger className="h-10 w-full rounded-md border-white/12 bg-white/[0.07] px-3 text-white hover:bg-white/[0.1] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-300/20 md:w-56">
-              <SelectValue placeholder="Todos los estados" />
-            </SelectTrigger>
-            <SelectContent align="start">
-              {statusFilterOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
@@ -96,7 +86,6 @@ export function WorkspaceList({ data }: WorkspaceListProps) {
                 <h2 className="truncate text-base font-semibold text-white">
                   {workspace.name}
                 </h2>
-                <WorkspaceStatusBadge status={workspace.status} />
               </div>
               <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/60">
                 {workspace.description ?? "Proceso documental listo para organizar avances y seguimiento."}

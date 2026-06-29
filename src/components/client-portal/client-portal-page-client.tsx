@@ -25,6 +25,10 @@ import type {
   DocumentRequestStatus,
   FileDownloadResponse,
 } from "@/lib/api/types";
+import {
+  MAX_UPLOAD_FILE_SIZE_LABEL,
+  validateUploadFileSize,
+} from "@/lib/files";
 
 type ClientPortalPageClientProps = {
   token: string;
@@ -164,6 +168,16 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
       return;
     }
 
+    const fileSizeError = validateUploadFileSize(file);
+    if (fileSizeError) {
+      setError(fileSizeError);
+      const input = fileInputs.current[request.id];
+      if (input) {
+        input.value = "";
+      }
+      return;
+    }
+
     setUploadingRequestId(request.id);
     setError(null);
 
@@ -192,7 +206,7 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
       setError(
         caught instanceof ApiError
           ? caught.message
-          : "No pudimos subir el documento.",
+          : "No pudimos enviar el archivo.",
       );
     } finally {
       setUploadingRequestId(null);
@@ -313,12 +327,11 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
         ) : (
           <section className="grid gap-5 py-6">
             {summary ? (
-              <div className="grid gap-3 sm:grid-cols-5">
+              <div className="grid gap-3 sm:grid-cols-4">
                 <Summary label="Pendientes" value={summary.pending} />
-                <Summary label="Recibidas" value={summary.submitted} />
-                <Summary label="Revision" value={summary.inReview} />
-                <Summary label="Observadas" value={summary.observed} />
+                <Summary label="Enviadas" value={summary.submitted} />
                 <Summary label="Aprobadas" value={summary.approved} />
+                <Summary label="Rechazadas" value={summary.rejected} />
               </div>
             ) : null}
 
@@ -338,14 +351,11 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
                           <h2 className="text-base font-semibold tracking-normal">
                             {request.title}
                           </h2>
-                          <span className="rounded-md border border-white/10 bg-white/[0.07] px-2 py-0.5 text-xs text-white/70">
+                          <span
+                            className={`rounded-md border px-2 py-0.5 text-xs font-medium ${statusClassName(request.status)}`}
+                          >
                             {formatStatus(request.status)}
                           </span>
-                          {request.required ? (
-                            <span className="rounded-md border border-cyan-200/20 bg-cyan-200/10 px-2 py-0.5 text-xs text-cyan-100">
-                              Requerido
-                            </span>
-                          ) : null}
                         </div>
                         <p className="mt-2 text-sm leading-6 text-white/60">
                           {request.description ??
@@ -385,6 +395,11 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
                             uploadFile(request, event.target.files?.[0])
                           }
                         />
+                        {canUpload ? (
+                          <p className="text-xs text-white/40">
+                            Maximo {MAX_UPLOAD_FILE_SIZE_LABEL} por archivo.
+                          </p>
+                        ) : null}
                         <Button
                           type="button"
                           className="h-9 rounded-md"
@@ -398,7 +413,7 @@ export function ClientPortalPageClient({ token }: ClientPortalPageClientProps) {
                           ) : (
                             <CheckCircle2 className="size-4" />
                           )}
-                          {canUpload ? "Subir archivo" : "Cerrado"}
+                          {canUpload ? "Enviar archivo" : "Cerrado"}
                         </Button>
                       </div>
                     </div>
@@ -536,19 +551,35 @@ function sessionStorageKey(token: string) {
 
 function formatStatus(status: DocumentRequestStatus) {
   const labels: Record<DocumentRequestStatus, string> = {
-    DRAFT: "Borrador",
+    DRAFT: "Pendiente",
     PENDING: "Pendiente",
-    SUBMITTED: "Recibido",
-    IN_REVIEW: "En revision",
-    OBSERVED: "Observado",
-    RESUBMITTED: "Reenviado",
+    SUBMITTED: "Enviado",
+    IN_REVIEW: "Enviado",
+    OBSERVED: "Rechazado",
+    RESUBMITTED: "Enviado",
     APPROVED: "Aprobado",
     REJECTED: "Rechazado",
-    OVERDUE: "Vencido",
-    CANCELLED: "Cancelado",
+    OVERDUE: "Pendiente",
+    CANCELLED: "Rechazado",
   };
 
   return labels[status];
+}
+
+function statusClassName(status: DocumentRequestStatus) {
+  if (["SUBMITTED", "IN_REVIEW", "RESUBMITTED"].includes(status)) {
+    return "border-cyan-200/25 bg-cyan-200/12 text-cyan-100";
+  }
+
+  if (status === "APPROVED") {
+    return "border-emerald-200/25 bg-emerald-200/12 text-emerald-100";
+  }
+
+  if (["OBSERVED", "REJECTED", "CANCELLED"].includes(status)) {
+    return "border-rose-200/25 bg-rose-200/12 text-rose-100";
+  }
+
+  return "border-amber-200/25 bg-amber-200/12 text-amber-100";
 }
 
 function formatDate(value: string | null) {

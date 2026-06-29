@@ -28,12 +28,11 @@ export function DocumentRequestsSection({
 }: DocumentRequestsSectionProps) {
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-4">
         <Summary label="Pendientes" value={data.summary.pending} />
         <Summary label="Recibidas" value={data.summary.submitted} />
-        <Summary label="Revision" value={data.summary.inReview} />
-        <Summary label="Observadas" value={data.summary.observed} />
         <Summary label="Aprobadas" value={data.summary.approved} />
+        <Summary label="Rechazadas" value={data.summary.rejected} />
       </div>
 
       <ApplyChecklistTemplateForm
@@ -56,11 +55,6 @@ export function DocumentRequestsSection({
                   <h3 className="truncate text-sm font-semibold text-white">
                     {request.title}
                   </h3>
-                  {request.required ? (
-                    <span className="rounded-md border border-cyan-200/20 bg-cyan-200/10 px-2 py-0.5 text-xs text-cyan-100">
-                      Requerido
-                    </span>
-                  ) : null}
                 </div>
                 <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/60">
                   {request.description ??

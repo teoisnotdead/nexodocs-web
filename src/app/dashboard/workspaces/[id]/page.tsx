@@ -1,11 +1,7 @@
-import { ArchiveWorkspaceButton } from "@/components/workspaces/archive-workspace-button";
 import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { ClientPortalSharePanel } from "@/components/client-portal/client-portal-share-panel";
 import { DocumentRequestsSection } from "@/components/document-requests/document-requests-section";
-import {
-  WorkspaceStatusBadge,
-  formatWorkspaceType,
-} from "@/components/workspaces/workspace-status";
+import { formatWorkspaceType } from "@/components/workspaces/workspace-status";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,7 +84,6 @@ export default async function WorkspaceDetailPage({
               <h1 className="text-2xl font-semibold tracking-normal text-balance md:text-3xl">
                 {workspace.name}
               </h1>
-              <WorkspaceStatusBadge status={workspace.status} />
             </div>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
               {workspace.description ??
@@ -106,18 +101,17 @@ export default async function WorkspaceDetailPage({
               <Edit3 className="size-4" />
               Editar
             </Link>
-            <ArchiveWorkspaceButton workspaceId={workspace.id} />
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[1fr_0.8fr]">
+        <div className="grid gap-4">
           <Card className="glass-card rounded-md">
             <CardHeader>
               <CardTitle className="text-base tracking-normal text-white">
                 Ficha del proceso
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Detail
                 icon={Building2}
                 label="Cliente"
@@ -145,16 +139,6 @@ export default async function WorkspaceDetailPage({
                 label="Fecha limite"
                 value={formatDate(workspace.dueDate)}
               />
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card rounded-md">
-            <CardHeader>
-              <CardTitle className="text-base tracking-normal text-white">
-                Seguimiento
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
               <Detail
                 icon={UserRound}
                 label="Creado por"
@@ -165,14 +149,6 @@ export default async function WorkspaceDetailPage({
                 label="Ultima actualizacion"
                 value={formatDate(workspace.updatedAt)}
               />
-              <div>
-                <p className="text-xs font-medium uppercase text-white/50">
-                  Estado actual
-                </p>
-                <div className="mt-2">
-                  <WorkspaceStatusBadge status={workspace.status} />
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -238,9 +214,8 @@ async function getDocumentRequests(
       summary: {
         pending: 0,
         submitted: 0,
-        inReview: 0,
-        observed: 0,
         approved: 0,
+        rejected: 0,
       },
     };
   }

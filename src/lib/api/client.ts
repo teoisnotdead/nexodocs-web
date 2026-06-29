@@ -15,12 +15,28 @@ type ApiFetchOptions = Omit<RequestInit, "body"> & {
 };
 
 const browserBaseUrl = "/api/backend";
+let refreshPromise: Promise<void> | null = null;
 
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
 ): Promise<T> {
-  const response = await fetch(`${browserBaseUrl}${path}`, {
+  const response = await makeRequest(path, options);
+
+  if (response.status === 401 && shouldAttemptRefresh(path)) {
+    try {
+      await refreshSession();
+      return parseApiResponse<T>(await makeRequest(path, options));
+    } catch {
+      return parseApiResponse<T>(response);
+    }
+  }
+
+  return parseApiResponse<T>(response);
+}
+
+async function makeRequest(path: string, options: ApiFetchOptions) {
+  return fetch(`${browserBaseUrl}${path}`, {
     ...options,
     credentials: "include",
     headers: {
@@ -36,8 +52,27 @@ export async function apiFetch<T>(
           ? undefined
           : JSON.stringify(options.body),
   });
+}
 
-  return parseApiResponse<T>(response);
+function shouldAttemptRefresh(path: string) {
+  return !path.startsWith("/auth/");
+}
+
+async function refreshSession() {
+  refreshPromise ??= fetch(`${browserBaseUrl}/auth/refresh`, {
+    method: "POST",
+    credentials: "include",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Unable to refresh session");
+      }
+    })
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
 }
 
 export async function parseApiResponse<T>(response: Response): Promise<T> {

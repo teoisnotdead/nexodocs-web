@@ -32,6 +32,7 @@ export function RegisterForm() {
       name: "",
       email: "",
       password: "",
+      rememberMe: true,
     },
   });
 

@@ -17,10 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  workspaceStatusOptions,
-  workspaceTypeOptions,
-} from "@/components/workspaces/workspace-status";
+import { workspaceTypeOptions } from "@/components/workspaces/workspace-status";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { Client, Workspace } from "@/lib/api/types";
 import {
@@ -60,7 +57,6 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
       periodYear: workspace?.periodYear ? String(workspace.periodYear) : "",
       periodMonth: workspace?.periodMonth ? String(workspace.periodMonth) : "",
       dueDate: workspace?.dueDate ? workspace.dueDate.slice(0, 10) : "",
-      status: workspace?.status ?? "DRAFT",
     },
   });
   const clientItems = clients.map((client) => ({
@@ -131,35 +127,6 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
               )}
             />
           </Field>
-          <Field label="Estado" error={errors.status?.message}>
-            <Controller
-              control={control}
-              name="status"
-              render={({ field }) => (
-                <Select
-                  items={workspaceStatusOptions}
-                  name={field.name}
-                  value={field.value}
-                  onValueChange={(nextValue) => {
-                    if (nextValue) {
-                      field.onChange(nextValue);
-                    }
-                  }}
-                >
-                  <SelectTrigger className={selectTriggerClassName}>
-                    <SelectValue placeholder="Selecciona un estado" />
-                  </SelectTrigger>
-                  <SelectContent align="start">
-                    {workspaceStatusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </Field>
           <Field label="Nombre del proceso" error={errors.name?.message}>
             <Input className={inputClassName} {...register("name")} />
           </Field>
@@ -205,14 +172,14 @@ export function WorkspaceForm({ mode, clients, workspace }: WorkspaceFormProps) 
       <div className="glass-card rounded-md p-5">
         <div className="mb-5">
           <h2 className="text-base font-semibold text-white">
-            Seguimiento
+            Periodo y plazo
           </h2>
           <p className="mt-1 text-sm text-white/60">
             Agrega periodo y fecha limite solo cuando aporten contexto.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          <Field label="Anio" error={errors.periodYear?.message}>
+          <Field label="Año" error={errors.periodYear?.message}>
             <Input
               className={inputClassName}
               inputMode="numeric"
@@ -289,6 +256,5 @@ function toWorkspacePayload(values: WorkspaceFormInput) {
     periodYear: values.periodYear ? Number(values.periodYear) : undefined,
     periodMonth: values.periodMonth ? Number(values.periodMonth) : undefined,
     dueDate: values.dueDate,
-    status: values.status,
   };
 }

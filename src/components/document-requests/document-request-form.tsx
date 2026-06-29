@@ -54,7 +54,6 @@ export function DocumentRequestForm({
     defaultValues: {
       title: "",
       description: "",
-      required: true,
       dueDate: "",
       assignedClientContactId: "",
     },
@@ -78,7 +77,7 @@ export function DocumentRequestForm({
           body: {
             title: values.title,
             description: values.description,
-            required: values.required,
+            required: true,
             dueDate: values.dueDate,
             assignedClientContactId: values.assignedClientContactId,
           },
@@ -87,7 +86,6 @@ export function DocumentRequestForm({
       reset({
         title: "",
         description: "",
-        required: true,
         dueDate: "",
         assignedClientContactId: "",
       });
@@ -154,14 +152,6 @@ export function DocumentRequestForm({
             )}
           />
         </Field>
-        <label className="flex min-h-11 items-center gap-3 text-sm text-white/75 md:mt-7">
-          <input
-            className="size-4 accent-cyan-200"
-            type="checkbox"
-            {...register("required")}
-          />
-          Requerido para completar el proceso
-        </label>
         <Field
           className="md:col-span-2"
           label="Descripcion"

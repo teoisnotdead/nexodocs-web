@@ -167,12 +167,19 @@ export type Workspace = {
     name: string;
     email: string;
   };
+  documentRequestSummary?: DocumentRequestSummary;
+};
+
+export type DocumentRequestSummary = {
+  pending: number;
+  submitted: number;
+  approved: number;
+  rejected: number;
 };
 
 export type WorkspaceListResponse = {
   items: Workspace[];
   summary: {
-    draft: number;
     active: number;
     waitingClient: number;
     inReview: number;
@@ -237,13 +244,7 @@ export type DocumentRequest = {
 
 export type DocumentRequestListResponse = {
   items: DocumentRequest[];
-  summary: {
-    pending: number;
-    submitted: number;
-    inReview: number;
-    observed: number;
-    approved: number;
-  };
+  summary: DocumentRequestSummary;
 };
 
 export type DocumentStatus =

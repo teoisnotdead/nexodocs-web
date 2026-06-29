@@ -1,11 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FilePlus2, Loader2 } from "lucide-react";
+import { FilePlus2, Loader2, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,12 +22,15 @@ const inputClassName =
   "h-11 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
 const textareaClassName =
   "min-h-32 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
+const documentInputClassName =
+  "h-10 w-full rounded-md border border-white/12 bg-white/[0.07] px-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20";
 
 export function ChecklistTemplateForm() {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -36,8 +39,12 @@ export function ChecklistTemplateForm() {
     defaultValues: {
       name: "",
       description: "",
-      items: "",
+      items: [{ title: "" }],
     },
+  });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "items",
   });
 
   async function onSubmit(values: ChecklistTemplateFormInput) {
@@ -50,13 +57,12 @@ export function ChecklistTemplateForm() {
           name: values.name,
           description: values.description,
           items: values.items
-            .split("\n")
-            .map((item) => item.trim())
+            .map((item) => item.title.trim())
             .filter(Boolean)
             .map((title) => ({ title, required: true })),
         },
       });
-      reset();
+      reset({ name: "", description: "", items: [{ title: "" }] });
       router.refresh();
     } catch (error) {
       setFormError(
@@ -94,13 +100,58 @@ export function ChecklistTemplateForm() {
           />
         </Field>
 
-        <Field label="Documentos" error={errors.items?.message}>
-          <Textarea
-            className={textareaClassName}
-            placeholder={"Facturas de compra\nFacturas de venta\nCartola bancaria"}
-            {...register("items")}
-          />
-        </Field>
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-white/70">
+              Documentos
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+              onClick={() => append({ title: "" })}
+            >
+              <Plus className="size-4" />
+              Agregar
+            </Button>
+          </div>
+
+          <div className="grid gap-2">
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="grid gap-2 sm:grid-cols-[1fr_auto]"
+              >
+                <Input
+                  className={documentInputClassName}
+                  placeholder={
+                    index === 0
+                      ? "Facturas de compra"
+                      : "Nombre del documento"
+                  }
+                  {...register(`items.${index}.title`)}
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  className="h-10 w-10 rounded-md border-white/12 bg-white/[0.06] text-white hover:bg-white/[0.12]"
+                  disabled={fields.length === 1}
+                  onClick={() => remove(index)}
+                  aria-label="Eliminar documento"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+                {errors.items?.[index]?.title?.message ? (
+                  <span className="text-xs text-rose-200 sm:col-span-2">
+                    {errors.items[index]?.title?.message}
+                  </span>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {formError ? (

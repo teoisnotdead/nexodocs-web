@@ -8,7 +8,7 @@ const optionalText = z
 
 const optionalYear = optionalText.refine(
   (value) => !value || (/^\d{4}$/.test(value) && Number(value) >= 1900 && Number(value) <= 2200),
-  "Ingresa un anio valido.",
+  "Ingresa un año valido.",
 );
 
 const optionalMonth = optionalText.refine(
@@ -30,16 +30,6 @@ export const workspaceFormSchema = z.object({
   periodYear: optionalYear,
   periodMonth: optionalMonth,
   dueDate: optionalText,
-  status: z.enum([
-    "DRAFT",
-    "ACTIVE",
-    "WAITING_CLIENT",
-    "IN_REVIEW",
-    "WAITING_APPROVAL",
-    "COMPLETED",
-    "CANCELLED",
-    "ARCHIVED",
-  ]),
 });
 
 export type WorkspaceFormInput = z.infer<typeof workspaceFormSchema>;

@@ -1,9 +1,7 @@
-import { ArchiveClientButton } from "@/components/clients/archive-client-button";
 import { ClientStatusBadge } from "@/components/clients/client-status";
 import { ContactForm } from "@/components/clients/contact-form";
 import { DashboardShell } from "@/components/dashboard-shell";
 import {
-  WorkspaceStatusBadge,
   formatWorkspaceType,
 } from "@/components/workspaces/workspace-status";
 import { Badge } from "@/components/ui/badge";
@@ -90,7 +88,6 @@ export default async function ClientDetailPage({
               <Edit3 className="size-4" />
               Editar
             </Link>
-            <ArchiveClientButton clientId={client.id} />
           </div>
         </div>
 
@@ -152,7 +149,6 @@ export default async function ClientDetailPage({
                       <p className="truncate font-medium text-white">
                         {workspace.name}
                       </p>
-                      <WorkspaceStatusBadge status={workspace.status} />
                     </div>
                     <div className="mt-2 flex flex-wrap gap-3 text-sm text-white/60">
                       <span className="inline-flex items-center gap-1.5">
@@ -238,7 +234,6 @@ async function getClientWorkspaces(id: string): Promise<WorkspaceListResponse> {
     return {
       items: [],
       summary: {
-        draft: 0,
         active: 0,
         waitingClient: 0,
         inReview: 0,

@@ -33,7 +33,6 @@ const textareaClassName =
 const clientStatusOptions: Array<{ value: ClientStatus; label: string }> = [
   { value: "ACTIVE", label: "Activo" },
   { value: "PAUSED", label: "Pausado" },
-  { value: "ARCHIVED", label: "Archivado" },
 ];
 
 type ClientFormProps = {
@@ -146,7 +145,7 @@ export function ClientForm({ mode, client }: ClientFormProps) {
               <Field label="Sitio web" error={errors.website?.message}>
                 <Input
                   className={inputClassName}
-                  placeholder="https://empresa.cl"
+                  placeholder="empresa.cl"
                   {...register("website")}
                 />
               </Field>

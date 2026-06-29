@@ -56,7 +56,7 @@ export default async function EditWorkspacePage({
             Editar {workspace.name}
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
-            Actualiza cliente, estado, fechas y contexto del proceso.
+            Actualiza cliente, fechas y contexto del proceso.
           </p>
         </div>
 

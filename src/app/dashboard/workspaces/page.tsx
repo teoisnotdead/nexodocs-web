@@ -34,8 +34,8 @@ export default async function WorkspacesPage() {
               Espacios de trabajo documental
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
-              Coordina cada flujo con su cliente, estado, fechas y contexto en
-              una vista ordenada.
+              Coordina cada flujo con su cliente, fechas, solicitudes y contexto
+              en una vista ordenada.
             </p>
           </div>
           <Link

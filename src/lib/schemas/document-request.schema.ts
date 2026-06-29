@@ -9,7 +9,6 @@ const optionalText = z
 export const documentRequestFormSchema = z.object({
   title: z.string().trim().min(2, "Ingresa el nombre de la solicitud."),
   description: optionalText,
-  required: z.boolean(),
   dueDate: optionalText,
   assignedClientContactId: optionalText,
 });

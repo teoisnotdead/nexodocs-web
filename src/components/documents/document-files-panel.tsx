@@ -6,7 +6,6 @@ import {
   FileCheck2,
   Loader2,
   MessageSquareText,
-  MessageSquareWarning,
   UploadCloud,
   XCircle,
 } from "lucide-react";
@@ -28,6 +27,10 @@ import type {
   Review,
   ReviewDecision,
 } from "@/lib/api/types";
+import {
+  MAX_UPLOAD_FILE_SIZE_LABEL,
+  validateUploadFileSize,
+} from "@/lib/files";
 
 type DocumentFilesPanelProps = {
   requestId: string;
@@ -55,9 +58,6 @@ export function DocumentFilesPanel({
   const [optimisticReviewDecisions, setOptimisticReviewDecisions] = useState<
     Record<string, ReviewDecision>
   >({});
-  const [observingDocumentId, setObservingDocumentId] = useState<string | null>(
-    null,
-  );
   const [resolvingObservationId, setResolvingObservationId] = useState<
     string | null
   >(null);
@@ -71,6 +71,15 @@ export function DocumentFilesPanel({
 
   async function uploadFile(file: File | undefined) {
     if (!file) {
+      return;
+    }
+
+    const fileSizeError = validateUploadFileSize(file);
+    if (fileSizeError) {
+      setError(fileSizeError);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
@@ -95,7 +104,7 @@ export function DocumentFilesPanel({
       setError(
         caught instanceof ApiError
           ? caught.message
-          : "No pudimos subir el documento.",
+          : "No pudimos enviar el archivo.",
       );
     } finally {
       setIsUploading(false);
@@ -126,6 +135,8 @@ export function DocumentFilesPanel({
   }
 
   async function createReview(documentId: string, decision: ReviewDecision) {
+    const comment = observationDrafts[documentId]?.trim();
+
     setReviewingDocumentId(documentId);
     setReviewingDecision(decision);
     setError(null);
@@ -133,12 +144,13 @@ export function DocumentFilesPanel({
     try {
       await apiFetch<Review>(`/documents/${documentId}/reviews`, {
         method: "POST",
-        body: { decision },
+        body: { decision, comment: comment || undefined },
       });
       setOptimisticReviewDecisions((current) => ({
         ...current,
         [documentId]: decision,
       }));
+      setObservationDrafts((current) => ({ ...current, [documentId]: "" }));
       router.refresh();
     } catch (caught) {
       setError(
@@ -149,35 +161,6 @@ export function DocumentFilesPanel({
     } finally {
       setReviewingDocumentId(null);
       setReviewingDecision(null);
-    }
-  }
-
-  async function createObservation(documentId: string) {
-    const comment = observationDrafts[documentId]?.trim();
-
-    if (!comment) {
-      setError("Escribe una observacion antes de guardarla.");
-      return;
-    }
-
-    setObservingDocumentId(documentId);
-    setError(null);
-
-    try {
-      await apiFetch<Observation>(`/documents/${documentId}/observations`, {
-        method: "POST",
-        body: { comment },
-      });
-      setObservationDrafts((current) => ({ ...current, [documentId]: "" }));
-      router.refresh();
-    } catch (caught) {
-      setError(
-        caught instanceof ApiError
-          ? caught.message
-          : "No pudimos guardar la observacion.",
-      );
-    } finally {
-      setObservingDocumentId(null);
     }
   }
 
@@ -235,6 +218,9 @@ export function DocumentFilesPanel({
               className="sr-only"
               onChange={(event) => uploadFile(event.target.files?.[0])}
             />
+            <p className="text-xs text-white/40">
+              Maximo {MAX_UPLOAD_FILE_SIZE_LABEL} por archivo.
+            </p>
             <Button
               type="button"
               variant="outline"
@@ -247,7 +233,7 @@ export function DocumentFilesPanel({
               ) : (
                 <UploadCloud className="size-4" />
               )}
-              Subir documento
+              Enviar archivo
             </Button>
           </div>
         ) : null}
@@ -265,17 +251,11 @@ export function DocumentFilesPanel({
               isReviewing && reviewingDecision === "APPROVED";
             const isRejecting =
               isReviewing && reviewingDecision === "REJECTED";
-            const isObserving = observingDocumentId === document.id;
             const isDownloading = downloadingDocumentId === document.id;
             const isClientUpload = Boolean(document.uploadedByClientContact);
             const canReview =
               isClientUpload &&
               ["UPLOADED", "UNDER_REVIEW", "OBSERVED"].includes(
-                effectiveStatus,
-              );
-            const canObserve =
-              isClientUpload &&
-              !["APPROVED", "REJECTED", "REPLACED", "ARCHIVED"].includes(
                 effectiveStatus,
               );
             const openObservations = document.observations.filter(
@@ -372,7 +352,7 @@ export function DocumentFilesPanel({
                   </div>
                 </div>
 
-                {canObserve ? (
+                {canReview ? (
                   <div className="mt-3 grid gap-2">
                     <label className="grid gap-2">
                       <span className="text-xs font-medium uppercase text-white/45">
@@ -380,7 +360,8 @@ export function DocumentFilesPanel({
                       </span>
                       <Textarea
                         className="min-h-20 w-full rounded-md border border-white/12 bg-white/[0.045] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300/60 focus:ring-3 focus:ring-cyan-300/20"
-                        placeholder="Describe lo que debe corregirse o aclararse"
+                        placeholder="Nota opcional al aprobar o rechazar"
+                        disabled={isReviewing}
                         value={observationDrafts[document.id] ?? ""}
                         onChange={(event) =>
                           setObservationDrafts((current) => ({
@@ -390,23 +371,6 @@ export function DocumentFilesPanel({
                         }
                       />
                     </label>
-                    <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="h-9 rounded-md border-orange-200/20 bg-orange-200/10 text-orange-100 hover:bg-orange-200/15"
-                        disabled={isObserving}
-                        onClick={() => createObservation(document.id)}
-                      >
-                        {isObserving ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <MessageSquareWarning className="size-4" />
-                        )}
-                        Guardar observacion
-                      </Button>
-                    </div>
                   </div>
                 ) : null}
 
@@ -439,11 +403,19 @@ export function DocumentFilesPanel({
                     {formatReviewDecision(optimisticReviewDecision)}
                   </p>
                 ) : document.reviews.length > 0 ? (
-                  <p className="mt-3 text-xs text-white/45">
-                    Ultima revision:{" "}
-                    {formatReviewDecision(document.reviews[0].decision)}{" "}
-                    por {document.reviews[0].createdBy.name}
-                  </p>
+                  <div className="mt-3 grid gap-2">
+                    <p className="text-xs text-white/45">
+                      Ultima revision:{" "}
+                      {formatReviewDecision(document.reviews[0].decision)}{" "}
+                      por {document.reviews[0].createdBy.name}
+                    </p>
+                    {document.reviews[0].comment ? (
+                      <p className="flex items-start gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm leading-6 text-white/65">
+                        <MessageSquareText className="mt-1 size-4 shrink-0 text-cyan-100/70" />
+                        {document.reviews[0].comment}
+                      </p>
+                    ) : null}
+                  </div>
                 ) : (
                   <p className="mt-3 text-xs text-white/40">
                     {formatDocumentStatus(effectiveStatus)}

@@ -3,10 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { useAuthRedirect } from "@/components/auth/auth-redirect";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import type { AuthResponse } from "@/lib/api/types";
@@ -20,13 +21,15 @@ export function LoginForm() {
   const redirectAfterAuth = useAuthRedirect();
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "alfredo.ssm@gmail.com",
-      password: "nexodocs123",
+      email: "",
+      password: "",
+      rememberMe: true,
     },
   });
 
@@ -80,9 +83,16 @@ export function LoginForm() {
       </label>
       <div className="flex flex-col gap-2 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
         <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="size-4 rounded border-white/20 bg-white/10"
+          <Controller
+            control={control}
+            name="rememberMe"
+            render={({ field }) => (
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                inputRef={field.ref}
+              />
+            )}
           />
           Recordarme
         </label>

@@ -4,9 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { ApiError, apiFetch } from "@/lib/api/client";
 import {
@@ -22,6 +23,7 @@ export function ContactForm({ clientId }: { clientId: string }) {
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -89,10 +91,16 @@ export function ContactForm({ clientId }: { clientId: string }) {
       </div>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="flex items-center gap-2 text-sm text-white/70">
-          <input
-            type="checkbox"
-            className="size-4 rounded border-white/20 bg-white/10"
-            {...register("isPrimary")}
+          <Controller
+            control={control}
+            name="isPrimary"
+            render={({ field }) => (
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                inputRef={field.ref}
+              />
+            )}
           />
           Marcar como contacto principal
         </label>

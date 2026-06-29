@@ -1,6 +1,7 @@
 "use client";
 
-import { BookTemplate, Loader2 } from "lucide-react";
+import { BookTemplate, Loader2, Plus } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useState } from "react";
@@ -92,6 +93,16 @@ export function ApplyChecklistTemplateForm({
       className="rounded-md border border-cyan-200/15 bg-cyan-200/[0.06] p-4"
       onSubmit={onSubmit}
     >
+      <div className="mb-3 flex justify-end">
+        <Link
+          href="/dashboard/templates"
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-cyan-100 transition hover:bg-white/[0.06] hover:text-white"
+        >
+          <Plus className="size-4" />
+          Gestionar plantillas
+        </Link>
+      </div>
+
       <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr_auto] lg:items-end">
         <label className="grid gap-2">
           <span className="text-sm font-medium text-white/70">

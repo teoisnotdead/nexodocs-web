@@ -10,7 +10,7 @@ export const documentReviewStatusOptions: Array<{
 }> = [
   { value: "UNDER_REVIEW", label: "En revision" },
   { value: "APPROVED", label: "Aprobado" },
-  { value: "OBSERVED", label: "Observado" },
+  { value: "OBSERVED", label: "Rechazado" },
   { value: "REJECTED", label: "Rechazado" },
 ];
 
@@ -18,7 +18,7 @@ const labels: Record<DocumentStatus, string> = {
   UPLOADED: "Recibido",
   UNDER_REVIEW: "En revision",
   APPROVED: "Aprobado",
-  OBSERVED: "Observado",
+  OBSERVED: "Rechazado",
   REJECTED: "Rechazado",
   REPLACED: "Reemplazado",
   ARCHIVED: "Archivado",
